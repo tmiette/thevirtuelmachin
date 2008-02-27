@@ -7,11 +7,11 @@ CC = gcc
 # Options de compilation
 CFLAGS = -Wall
 # Fichiers sources du projet
-SRC = $(REP_SRC)Main.c\
-	$(REP_SRC)Launch.c\
+SRC = Main.c\
+	Launch.c\
 	$(REP_SRC_INCL)Util.c
 # Répertoire d'inclusions
-REP_INCLUDE = -I$(REP_SRC) -I$(REP_SRC_INCL)
+REP_INCLUDE = -I$(REP_SRC_INCL)
 # Fichiers objets
 OBJ = $(SRC:.c=.o)
 # Exécutable
