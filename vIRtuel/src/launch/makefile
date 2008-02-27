@@ -1,5 +1,3 @@
-# Répertoire contenant les fichiers sources
-REP_SRC = *
 # Répertoire contenant les fichiers sources générique
 REP_SRC_INCL = ../include/
 # Répertoire contenant l'exécutable
