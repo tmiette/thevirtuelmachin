@@ -1,94 +1,63 @@
-# Makefiles
-MAKEFILE = makefile Makefile.libcsv Makefile.libods
-# Répertoire contenant les fichiers sources
-REP_SRC = src/
-# Répertoire contenant les fichiers sources de l'etl
-REP_SRC_ETL = $(REP_SRC)etl/
-# Répertoire contenant les fichiers sources générique
-REP_SRC_INCL = $(REP_SRC)include/
-# Répertoire contenant l'exécutable
-REP_BIN = bin/
-# Répertoire contenant les fichiers root
-REP_ROOT = root/
-# Répertoire contenant les fichiers data
-REP_DATA = data/
-# Répertoire contenant les fichiers tests
-REP_TESTS = tests/
-# Répertoire contenant le rapport
-REP_RAPP = rapport/
-# Compilateur
+# Source directory
+SRC_DIR = ./
+# Librairies directory
+LIB_DIR = ../objects/
+# Compiler
 CC = gcc
-# Options de compilation
-CFLAGS = -Wall -Werror -ansi
-# Fichiers sources du projet
-SRC = $(REP_SRC)main.c\
-	$(REP_SRC_INCL)util.c\
-	$(REP_SRC_ETL)iretlfactory.c\
-	$(REP_SRC_ETL)iretlopt.c\
-	$(REP_SRC_ETL)iretlrules.c\
-	$(REP_SRC_ETL)iretlinterface.c\
-	$(REP_SRC_ETL)iretl.c
-# Répertoire d'inclusions
-REP_INCLUDE = -I$(REP_SRC) -I$(REP_SRC_ETL) -I$(REP_SRC_INCL)
-# Fichiers objets
-OBJ = $(SRC:.c=.o)
-# Exécutable
-EXEC = $(REP_BIN)iretl
-# Archive .tar.gz
-TAR = MIETTE-MOURET.tar.gz
+# Compilation options
+CFLAGS = -Wall -ansi -fPIC
+# Include directories
+INCLUDE_DIR = -I$(SRC_DIR)
+# Source files
+SRC_CALC = $(SRC_DIR)calc.c
+SRC_INT2S = $(SRC_DIR)int2string.c
+SRC_S2INT = $(SRC_DIR)string2int.c
+# Object files
+OBJ_CALC = $(SRC_CALC:.c=.o)
+OBJ_INT2S = $(SRC_INT2S:.c=.o)
+OBJ_S2INT = $(SRC_S2INT:.c=.o)
+# Librairy
+LIB_CALC = $(LIB_DIR)calc.so
+LIB_INT2S = $(LIB_DIR)int2string.so
+LIB_S2INT = $(LIB_DIR)string2int.so
 
 
+all: $(LIB_CALC) $(LIB_INT2S) $(LIB_S2INT)
 
-# Cible par défaut
-all = $(EXEC)
-
-# Cible pour construire l'exécutable
-$(EXEC): $(OBJ)
+# Targets to building .so librairies
+$(LIB_CALC): $(OBJ_CALC)
 	@echo ----------------------------
-	@echo Link  $(EXEC)
+	@echo Building librairy $(LIB_CALC)
 	@echo ----------------------------
-	$(CC) $(CFLAGS) -o$(EXEC) $(OBJ) -ldl -rdynamic 
+	ld -shared $(OBJ_CALC) -o $(LIB_CALC)
 	@echo ----------------------------
 
-# Cible pour compiler les fichier sources
+$(LIB_INT2S): $(OBJ_INT2S)
+	@echo ----------------------------
+	@echo Building librairy $(LIB_INT2S)
+	@echo ----------------------------
+	ld -shared $(OBJ_INT2S) -o $(LIB_INT2S)
+	@echo ----------------------------
+	
+$(LIB_S2INT): $(OBJ_S2INT)
+	@echo ----------------------------
+	@echo Building librairy $(LIB_S2INT)
+	@echo ----------------------------
+	ld -shared $(OBJ_S2INT) -o $(LIB_S2INT)
+	@echo ----------------------------
+	
+# Target to compile each source file
 %.o: %.c
 	@echo ----------------------------
 	@echo Compiling $<
 	@echo ----------------------------
-	$(CC) -c $(CFLAGS) $(REP_INCLUDE) -o $@ $<
+	$(CC) -c $(CFLAGS) $(INCLUDE_DIR) -o $@ $<
 	@echo ----------------------------
 
-# Cible dont les dépendances seront systématiquement construites
-.PHONY: clean mrproper
-
-# Cible pour la suppression des fichiers .o et ~
+# Target to clean temporary files and librairies
 clean:
 	@echo ----------------------------
-	@echo Removing object files
+	@echo Removing files
 	@echo ----------------------------
-	rm -rf $(OBJ)
-	@echo ----------------------------
-	@echo Removing backup files
-	@echo ----------------------------
-	rm -rf $(REP_SRC)*~ $(REP_SRC_ETL)*~ $(REP_SRC_INCL)*~ $(REP_DATA)*~ $(REP_TESTS)*~ $(REP_ROOT)*~
-	@echo ----------------------------
-
-# Cible pour la suppression des fichiers .o et ~ et de l'exécutable
-mrproper: clean
-	@echo ----------------------------
-	@echo Removing executable file
-	@echo ----------------------------
-	rm -rf $(EXEC)
-	@echo ----------------------------
-	@echo Removing archive file
-	@echo ----------------------------
-	rm -rf $(TAR)
-	@echo ----------------------------
-
-# Cible pour la compression du projet (répertoire courant)
-tar: $(EXEC) clean
-	@echo ----------------------------
-	@echo Compressing project
-	@echo ----------------------------
-	tar -cf $(TAR) $(REP_SRC) $(REP_BIN) $(REP_DATA) $(REP_ROOT) $(REP_TESTS) $(REP_RAPP) $(MAKEFILE)
+	rm -f $(SRC_DIR)*.o $(SRC_DIR)*~ $(LIB_CALC) $(LIB_INT2S) $(LIB_S2INT)
 	@echo ----------------------------
