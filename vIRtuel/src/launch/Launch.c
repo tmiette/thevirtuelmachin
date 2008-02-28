@@ -1,5 +1,6 @@
 #include "Launch.h"
-
+extern sigset_t mask;
+extern void (*ptWork)(void*, void*);
 job jobs[BUFSIZ];
 static int firstJob = 0;
 static int lastJob = 0;
@@ -44,25 +45,53 @@ static void handleJob(job * j) {
 		DEBUG(debug,
 				printf("handleJob -> object (%d) received function (work)\n",
 						getpid()));
+
+		/* Execute work function */
+		(*ptWork)(NULL, NULL);
+
+		/* Send signal to my father to say to free in memory zone */
+		union sigval sVal;
+		sVal.sival_int = j->memIn;
+		if (sigqueue(getppid(), SIGRTMIN, sVal) == -1) {
+			perror("handleJob -> send SIGRTMIN with mem zone to free");
+			exit(-1);
+		}
+
+		sVal.sival_int = j->memOut;
+		if (sigqueue(getppid(), SIGRTMIN, sVal) == -1) {
+			perror("handleJob -> send SIGRTMIN with mem zone to free");
+			exit(-1);
+		}
+
 	} else if (strcmp(j->functionName, "waitall") == 0) {
 		DEBUG(debug, printf("handleJob -> waitall send by (%d)\n", j->pid));
 
+		/* I send a ready signal to my father to say */
 		if (kill(getppid(), SIGUSR1) == -1) {
 			perror("handleJob -> kill SIGUSR1");
 			exit(-1);
 		}
-				if (raise(SIGSTOP) == -1) {
-			perror("handleJob -> raise SIGSTOP");
-			exit(-1);
-		}
+
+		DEBUG(debug, printf("handleJob -> I'm going to sleep (%d)\n", getpid()));
+		/* I'm waiting for a signal from my father to re-start */
+		sigsuspend(&mask);
+		DEBUG(debug, printf("handleJob -> I wake up (%d)\n", getpid()));
+
 	} else if (strcmp(j->functionName, "waitfor") == 0) {
 		DEBUG(debug, printf(
 				"handleJob -> SIGCONT sent to (%d) from object (%d)\n", j->pid,
 				getpid()));
 		kill(j->pid, SIGCONT);
+	} else if (strcmp(j->functionName, "free") == 0) {
+		DEBUG(debug, printf("handleJob -> free\n"));
+		/* Send signal to my father to say to free in memory zone */
+		union sigval sVal;
+		sVal.sival_int = j->memIn;
+		if (sigqueue(getppid(), SIGRTMIN+1, sVal) == -1) {
+			perror("handleJob -> send SIGRTMIN+1 with mem zone to free");
+			exit(-1);
+		}
 	}
-
-	/* Job executed */
 
 }
 

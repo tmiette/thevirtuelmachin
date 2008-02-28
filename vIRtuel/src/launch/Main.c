@@ -3,8 +3,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "Launch.h"
-
+sigset_t mask;
 int debug = true;
+void (*ptWork)(void*, void*) = NULL;
 
 void handler();
 
@@ -18,36 +19,61 @@ int main(int argc, char **argv) {
 		exit(-1);
 	}
 	
-	signal(SIGCONT, handler);
 	
+	
+	sigemptyset (&mask);
+	sigaddset (&mask, SIGUSR2);
+	sigprocmask ( SIG_BLOCK, &mask, NULL);
+
+
+	struct sigaction sa;
+	sa.sa_handler = handler;
+	sa.sa_flags = 0;
+	sigaction(SIGUSR2,&sa,NULL);
+
+	sigfillset (&mask);
+	sigdelset (&mask, SIGUSR2);
+
 	setvbuf(stdout, NULL, _IONBF, 0);
 
-	/* open tube mkfifo */
+	/* Open tube mkfifo */
 //	if ((fd = open("/home/akiri/Documents/workspace/vIRtuel/bin/montube", O_WRONLY)) == -1) {
 //		perror("launch : open mkfifo");
 //		exit(-1);
 //	}
 //	dup2(fd, 1);
 	
-	/* open target library */
+	/* Open target library */
 	handle
 			= dlopen(
-					"/home/akiri/Documents/workspace/vIRtuel/objects_src/int2string.so",
+					"/home/akiri/workspace/vIRtuel/objects_src/int2string.so",
 					RTLD_LAZY);
 	if (!handle) {
 		perror("unable to open library\n");
 		exit(-1);
 	}
 	
-	/* handle memory */
+	/* Initialize work function pointer */
+	*(void**)(&ptWork) = dlsym(handle, "work");
+	if (ptWork == NULL) {
+		perror("error dlsym");
+		exit(-1);
+	}
+	
+	/* Handle memory */
 	handleMem();
 
-	/* start waiting for command */
+	/* Start waiting for command */
 	waitJob();
+	
+	/* Close library */
+	dlclose(handle);
 
 	return 0;
 }
 
-void handler(){
-	printf("\n\n\nreveille (%d)\n\n\n", getpid());
+void
+handler (int signal)
+{
+printf("coucou, je suis %d, reception du signal %d\n", getpid(), signal);
 }

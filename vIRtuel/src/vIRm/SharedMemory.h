@@ -17,11 +17,19 @@
 
 extern int debug;
 
+typedef struct Bloc__ {
+	int blocValue;
+	char blocName[BUFSIZ];
+} Bloc;
+
 void initSharedMemory();
 int getFreeBloc();
 void freeBloc(int bloc);
 void closeSharedMemory();
-void fillBloc(int bloc, char * data);
+void fillBloc(int index, char * data);
 char * getBloc(int bloc);
+int getBlocByName(char * name);
+void writeParameters(char * par, void * output);
+int nameBloc(int bloc, char * name);
 
 #endif /*SHAREDMEMORY_*/

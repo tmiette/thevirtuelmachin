@@ -1,9 +1,9 @@
 #include "SharedMemory.h"
 
 static char * MEM_NAME ="sharedmem";
-static int blocs[BLOC_NUMBER];
 static char * memory= NULL;
 static int memoryLength = 0;
+static Bloc blocs[BLOC_NUMBER];
 
 static int isValidBloc(int bloc);
 
@@ -16,10 +16,12 @@ void initSharedMemory() {
 	int i;
 
 	for (i = 0; i < BLOC_NUMBER; ++i) {
-		blocs[i] = -1;
+		blocs[i].blocValue = -1;
+		blocs[i].blocName[0] = '\0';
 	}
 
-	if ((file = open(MEM_NAME, O_RDWR | O_CREAT | O_TRUNC, 0666)) == -1) {
+	if ((file = open(MEM_NAME, 
+	O_RDWR | O_CREAT | O_TRUNC, 0666)) == -1) {
 		perror("initSharedMemory -> open");
 		exit(-1);
 	}
@@ -65,16 +67,17 @@ void initSharedMemory() {
 int getFreeBloc() {
 	int i;
 	for (i = 0; i < BLOC_NUMBER; ++i) {
-		if (blocs[i] == -1) {
+		if (blocs[i].blocValue == -1) {
 			return i;
 		}
 	}
 	return -1;
 }
 
-void freeBloc(int bloc) {
-	if (isValidBloc(bloc)) {
-		blocs[bloc] = -1;
+void freeBloc(int index) {
+	if (isValidBloc(index)) {
+		blocs[index].blocValue = -1;
+		blocs[index].blocName[0] = '\0';
 	}
 }
 
@@ -86,32 +89,99 @@ void closeSharedMemory() {
 
 }
 
-void fillBloc(int bloc, char * data) {
+void fillBloc(int index, char * data) {
 	int i = 0;
-	DEBUG(debug, printf("fillBloc -> data to copy (%s)\n", data));
-	if (isValidBloc(bloc)) {
+	if (isValidBloc(index)) {
+		DEBUG(debug, printf("fillBloc -> data to copy (%s), bloc (%d, %s)\n",
+				data, index, blocs[index].blocName));
 		while (data[i] != '\0') {
-			memory[bloc * BLOC_MEM_LENGTH + i] = data[i];
+			memory[index * BLOC_MEM_LENGTH + i] = data[i];
 			i++;
 		}
-		memory[bloc * BLOC_MEM_LENGTH + i] = '\0';
+		memory[index * BLOC_MEM_LENGTH + i] = '\0';
+		blocs[index].blocValue = index;
 	}
 }
 
-char * getBloc(int bloc) {
+void writeParameters(char * par, void * output) {
+
+	char* tokens= NULL;
+	char* trimed= NULL;
+	int integer = 0;
+
+	tokens = strtok(par, ",");
+	while (tokens != NULL) {
+
+		trimed = trim(tokens);
+
+		// integer case
+		if (isDigit(trimed)) {
+			integer = atoi(trimed);
+			memcpy(output, &integer, sizeof(int));
+			output += sizeof(int);
+		}
+		// variable case
+		else if (0) {
+
+		}
+		// string case
+		else {
+			sprintf(output, "%s\0", trimed);
+			output += strlen(trimed) + 1;
+		}
+
+		tokens = strtok(NULL, ",");
+	}
+}
+
+char * getBloc(int index) {
 	char * head= NULL;
-	if (isValidBloc(bloc)) {
-		head = &memory[bloc * BLOC_MEM_LENGTH];
+	if (isValidBloc(index)) {
+		head = &memory[index * BLOC_MEM_LENGTH];
 	}
 	return head;
 }
 
-int isValidBloc(int bloc) {
-	if (bloc >= 0 && bloc < BLOC_NUMBER && memoryLength != 0) {
-		DEBUG(debug, printf("isValidBloc -> valid bloc (%d)\n", bloc));
+/**
+ * Checks validy of the memory bloc index. Returns 1 if index is valid, 0 otherwise.
+ */
+int isValidBloc(int index) {
+	if (index >= 0 && index < BLOC_NUMBER && memoryLength != 0) {
+		DEBUG(debug, printf("isValidBloc -> valid bloc (%d)\n", index));
 		return 1;
 	}
-	DEBUG(debug, printf("isValidBloc -> not a valid bloc (%d)\n", bloc));
+	DEBUG(debug, printf("isValidBloc -> not a valid bloc (%d)\n", index));
 	return 0;
+}
+
+/**
+ * Returns the bloc corresponding to the given name or -1 if name is unknow.
+ */
+int getBlocByName(char * name) {
+	int i;
+	for (i = 0; i < BLOC_NUMBER; ++i) {
+		printf("index (%d), blocs[i].blocName (%s)\n", i, blocs[i].blocName);
+		if (name[0] != '\0' && strcmp(blocs[i].blocName, name) == 0) {
+			return blocs[i].blocValue;
+		}
+	}
+	return -1;
+}
+
+char * getBlockName(int bloc) {
+	if (isValidBloc(bloc)) {
+		return blocs[bloc].blocName;
+	}
+	return NULL;
+}
+
+int nameBloc(int bloc, char * name) {
+	if (name[0] != '\0' && isValidBloc(bloc) && blocs[bloc].blocValue == -1) {
+		DEBUG(debug, printf("nameBloc -> name (%s) given to bloc (%d)\n",
+				blocs[bloc].blocName, blocs[bloc].blocValue));
+		blocs[bloc].blocValue = bloc;
+		strcpy(blocs[bloc].blocName, name);
+	}
+	return -1;
 }
 

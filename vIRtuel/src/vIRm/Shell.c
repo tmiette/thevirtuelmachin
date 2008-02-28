@@ -1,8 +1,10 @@
 #include "Shell.h"
 
-static char request[BUFSIZ];
+//static char request[BUFSIZ];
 static object objects[MAX_OBJECT_NUMBER];
 static int pendingObjects[MAX_OBJECT_NUMBER]; //O -> pendind; 1 -> ready
+
+
 static void printPrompt();
 static void handleCommand(command * cmd);
 static void printCommand(command * cmd);
@@ -22,8 +24,9 @@ static void pendingObjectHandler(int sig, siginfo_t * info, void * useless);
 static int allObjectsReady();
 static void sendWorkCommand(command * cmd);
 static void waitAllObjects();
-static void freeVar();
+static void freeVar(command * cmd);
 static void createNewObject(command * cmd);
+static void freeMemSignalHandler(int sig, siginfo_t * info, void * useless);
 
 /**
  * Displays the shell prompt. Copy the user data entered to buffer and delete
@@ -59,7 +62,7 @@ static void handleCommand(command * cmd) {
 			sendWorkCommand(cmd);
 		} else if (strcmp(cmd->functionName, "free") == 0) {
 			DEBUG(debug, printf("handleCommand -> free\n"));
-			freeVar();
+			freeVar(cmd);
 		} else if (strcmp(cmd->functionName, "new") == 0) {
 			DEBUG(debug, printf("handleCommand -> new\n"));
 			createNewObject(cmd);
@@ -84,13 +87,32 @@ static void waitAllObjects() {
 		sendJob(i, &j);
 		pendingObjects[i] = 0;
 		DEBUG(debug, printf("handleCommand -> pending object (%d)\n",
-			objects[i].pid));
+				objects[i].pid));
 		i++;
 	}
 }
 
-static void freeVar() {
-	//TODO 
+static void freeVar(command * cmd) {
+	int targetObjIndex = getObjIndexByName(cmd->targetObject);
+	job j;
+	/* Get variable to free */
+	int memBloc = getBlocByName(cmd->var);
+	if (memBloc == -1) {
+		DEBUG(debug, printf("freeVar -> invalid variable (%s)\n", cmd->var));
+		return;
+	}
+
+	/* Detect a waitfor job */
+	if (cmd->waitFor == 1 && (targetObjIndex != -1)) {
+		DEBUG(debug, printf("freeVar -> waitfor object (%s)\n",
+				cmd->targetObject));
+
+		/* Build a job to send to target object */
+		createJob(&j, getpid(), "free", memBloc, -1);
+		sendJob(targetObjIndex, &j);
+	} else {
+		freeBloc(memBloc);
+	}
 }
 
 static void createNewObject(command * cmd) {
@@ -118,8 +140,12 @@ static void createNewObject(command * cmd) {
 			/* Close useless pipe in */
 			close(objects[index].pipe[1]);
 
-			if (execl("/home/akiri/Documents/workspace/vIRtuel/bin/launch", "launch",
-				"POUET", "mem", NULL) == -1) {
+			//TODO tester si pas de pb
+			/* Close useless pipe out */
+			close(objects[index].pipe[0]);
+
+			if (execl("/home/akiri/workspace/vIRtuel/bin/launch", "launch",
+					"POUET", "mem", NULL) == -1) {
 				perror("execl");
 				exit(-1);
 			}
@@ -129,8 +155,8 @@ static void createNewObject(command * cmd) {
 			/* Store son pid */
 			objects[index].pid = pid;
 			DEBUG(debug, printf(
-				"handleCommand -> new object created (name=%s) (pid=%d)\n",
-				objects[index].name, objects[index].pid));
+					"handleCommand -> new object created (name=%s) (pid=%d)\n",
+					objects[index].name, objects[index].pid));
 			/* close useless pipe out */
 			close(objects[index].pipe[0]);
 			break;
@@ -141,7 +167,7 @@ static void createNewObject(command * cmd) {
 static void sendWorkCommand(command * cmd) {
 
 	int objectIndex;
-	/* Object exists */
+	/* Test if object exists */
 	if (cmd->objectName[0] != '\0' && ((objectIndex
 			= getObjIndexByName(cmd->objectName)) != -1)) {
 
@@ -149,10 +175,12 @@ static void sendWorkCommand(command * cmd) {
 		job j;
 		if (cmd->waitFor == 1 && (targetObjIndex != -1)) {
 
-			DEBUG(debug, printf("sendWorkCommand -> send SIGSTOP to (pid=%d)\n",
-				objects[objectIndex].pid));
+			DEBUG(debug, printf(
+					"sendWorkCommand -> send SIGSTOP to (pid=%d)\n",
+					objects[objectIndex].pid));
 
 			/* Send SIGSTOP to object */
+			/* This object will be prevent by target object to restart */
 			kill(objects[objectIndex].pid, SIGSTOP);
 
 			/* Build a job to send to target object */
@@ -164,8 +192,38 @@ static void sendWorkCommand(command * cmd) {
 			DEBUG(debug, printf("sendWorkCommand -> no waitfor job\n"));
 		}
 
+		int memIN = -1;
+		int memOUT = -1;
+
+		/* Check variable presence to specify bloc memory in to son */
+		if (cmd->var[0] != '\0') {
+			/* Check if variable name is already associated */
+			memOUT = getBlocByName(cmd->var);
+			if (memOUT == -1) {
+				/* Get a free bloc memory */
+				if ((memOUT = getFreeBloc()) == -1) {
+					fprintf(stderr, "SharedMemory : no more space available");
+					exit(-1);
+				}
+				/* Associate variable name to bloc number */
+				printf("variable ========= name = (%s)   val = (%d)\n", cmd->var, memOUT);
+				nameBloc(memOUT, cmd->var);
+			}
+			DEBUG(debug, printf(
+					"sendWorkCommand -> variable present, memOUT= (%d)\n",
+					memOUT));
+		}
+
+		/* Get a free bloc memory */
+		if ((memIN = getFreeBloc()) == -1) {
+			fprintf(stderr, "SharedMemory : no more space available");
+			exit(-1);
+		}
+		/* Fill bloc memIN with work function arguments */
+		fillBloc(memIN, cmd->argv);
+
 		/* Build job object and send job to object */
-		createJob(&j, getpid(), "work", -1, -1);
+		createJob(&j, getpid(), "work", memIN, memOUT);
 		sendJob(objectIndex, &j);
 	}
 	/* Object doesn't exist */
@@ -189,10 +247,11 @@ static void sendJob(int objectIndex, job * j) {
 		exit(-1);
 	}
 	DEBUG(
-		debug,
-		printf(
-			"sendJob -> job sent (fun=%s) (memIn=%d) (memOut=%d) (pid=%d) to (pid=%d)\n",
-			j->functionName, j->memIn, j->memOut, j->pid, objects[objectIndex].pid));
+			debug,
+			printf(
+					"sendJob -> job sent (fun=%s) (memIn=%d) (memOut=%d) (pid=%d) to (pid=%d)\n",
+					j->functionName, j->memIn, j->memOut, j->pid,
+					objects[objectIndex].pid));
 
 }
 
@@ -209,8 +268,6 @@ void launch() {
 	initPendingObjects();
 
 	initSharedMemory();
-	fillBloc(getFreeBloc(), "test");
-	printf("(%s)", getBloc(0));
 
 	initObjectsTab();
 
@@ -240,9 +297,9 @@ static void endShell() {
 static void printCommand(command * cmd) {
 	if (cmd != NULL) {
 		printf(
-			"ObjectName=%s, Function=%s, Arguments=%s, Variable=%s, TargetObject=%s, WaitFor=%d\n",
-			cmd->objectName, cmd->functionName, cmd->argv, cmd->var,
-			cmd->targetObject, cmd->waitFor);
+				"ObjectName=%s, Function=%s, Arguments=%s, Variable=%s, TargetObject=%s, WaitFor=%d\n",
+				cmd->objectName, cmd->functionName, cmd->argv, cmd->var,
+				cmd->targetObject, cmd->waitFor);
 	}
 }
 
@@ -279,14 +336,14 @@ static int getFreeObjectsTabIndex() {
 static int getObjIndexByName(char * objectName) {
 	int i;
 	for (i = 0; i < MAX_OBJECT_NUMBER; ++i) {
-		if (strcmp(objectName, objects[i].name) == 0) {
+		if (objectName[0] != '\0' && strcmp(objectName, objects[i].name) == 0) {
 			DEBUG(debug, printf("getObjIndexByName -> object (%s) found\n",
-				objectName));
+					objectName));
 			return i;
 		}
 	}
 	DEBUG(debug, printf("getObjIndexByName -> object (%s) not found\n",
-		objectName));
+			objectName));
 	return -1;
 }
 
@@ -320,31 +377,26 @@ static void initPendingObjects() {
 
 static void pendingObjectHandler(int sig, siginfo_t * info, void * useless) {
 	DEBUG(debug, printf("pendingObjectHandler -> SIGUSR1 received from (%d)\n",
-		info->si_pid));
-	
+			info->si_pid));
+
 	int index, i = 0;
-	
-	for (i = 0; i < 10; ++i) {
-				printf("index pending object %d\n", i);
-				printf("val pending object %d\n", pendingObjects[i]);
-			}
-	
-	
+
 	if ((index = getObjIndexByPid(info->si_pid)) != -1) {
 		pendingObjects[index] = 1; // Set object to ready
 		DEBUG(debug, printf("pendingObjectHandler -> object (%d) ready\n",
-										info->si_pid));
-		printf("pending : index %d %d\n", index, pendingObjects[index]);
+				info->si_pid));
 	}
 	if (allObjectsReady() == true) {
-		//Wake up pending objects
+		/* Wake up pending objects */
 		for (i = 0; i < MAX_OBJECT_NUMBER; ++i) {
 			if (pendingObjects[i] != -1) {
-				DEBUG(debug, printf("pendingObjectHandler -> send SIGCONT to (%d)\n",
-								objects[i].pid));
-				kill(objects[i].pid, SIGCONT);
+				DEBUG(debug, printf(
+						"pendingObjectHandler -> send SIGUSR2 to (%d)\n",
+						objects[i].pid));
+				kill(objects[i].pid, SIGUSR2);
 			}
 		}
+		/* Initialize pending objets */
 		initPendingObjects();
 	}
 
@@ -362,9 +414,25 @@ static int allObjectsReady() {
 	return true;
 }
 
+static void freeMemSignalHandler(int sig, siginfo_t * info, void * useless) {
+	DEBUG(debug, printf("freeMemSignalHandler -> free memory zone (%d)\n",
+			info->si_value.sival_int));
+	/* A new shared memory bloc can be used by shell */
+	freeBloc(info->si_value.sival_int);
+}
+
+static void freeNamedBloc(int sig, siginfo_t * info, void * useless) {
+	DEBUG(debug, printf("freeNamedBloc -> free memory zone (%d) named (%s)\n",
+			info->si_value.sival_int, getBlockName(info->si_value.sival_int)));
+	/* A new shared memory bloc can be used by shell */
+	freeBloc(info->si_value.sival_int);
+}
+
 static void initSigActionHandler() {
 	sigset_t mask;
 	struct sigaction action;
+	struct sigaction action2;
+	struct sigaction action3;
 
 	if (sigemptyset(&mask) == -1) {
 		perror("initSigActionHandler -> sigemptyset");
@@ -386,23 +454,44 @@ static void initSigActionHandler() {
 		exit(-1);
 	}
 
-	//	struct sigaction action;
-	//	action.sa_sigaction = pendingObjectHandler;
-	//	sigemptyset(&action.sa_mask);
-	//	action.sa_flags = SA_SIGINFO;
-	//	sigaction(SIGRTMIN, & action, NULL);
-	//
-	//	siginfo_t info;
-	//	sigset_t sigset;
-	//	sigaddset(&sigset, SIGRTMIN);
-	//	sigwaitinfo(&sigset, &info);
+	if (sigemptyset(&mask) == -1) {
+		perror("initSigActionHandler -> sigemptyset");
+		exit(-1);
+	}
 
-	//		if (signal(SIGUSR1, pendingObjectHandler) == -1) {
-	//			perror("signal");
-	//			exit(-1);
-	//		}
+	sigaddset(&action2.sa_mask, SIGRTMIN);
 
-	//	sleep(2);
-	//
-	//	sigprocmask(SIG_UNBLOCK, &mask, NULL);
+	sigprocmask(SIG_BLOCK, &mask, NULL);
+
+	action2.sa_sigaction = freeMemSignalHandler;
+	action2.sa_mask = mask;
+	action2.sa_flags = 0;
+	action2.sa_mask = mask;
+	action2.sa_flags = SA_SIGINFO;
+
+	if (sigaction(SIGRTMIN, &action2, NULL) == -1) {
+		perror("initSigActionHandler -> sigaction");
+		exit(-1);
+	}
+
+	if (sigemptyset(&mask) == -1) {
+		perror("initSigActionHandler -> sigemptyset");
+		exit(-1);
+	}
+
+	sigaddset(&action3.sa_mask, SIGRTMIN+1);
+
+	sigprocmask(SIG_BLOCK, &mask, NULL);
+
+	action3.sa_sigaction = freeNamedBloc;
+	action3.sa_mask = mask;
+	action3.sa_flags = 0;
+	action3.sa_mask = mask;
+	action3.sa_flags = SA_SIGINFO;
+
+	if (sigaction(SIGRTMIN+1, &action2, NULL) == -1) {
+		perror("initSigActionHandler -> sigaction");
+		exit(-1);
+	}
+
 }
