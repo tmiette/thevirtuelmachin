@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 	}
 
 	printf("memfile %s", argv[2]);
-	openMemMapFile(argv[3]);
+	openMemMapFile(argv[2]);
 
 	sigemptyset(&mask);
 	sigaddset(&mask, SIGUSR2);
