@@ -1,8 +1,8 @@
 #include <stdio.h> 
 
 void work(void* input, void* output) {
-	
-	int* t = (int*)input;
+	printf("je suis dans work !\n");
+/*	int* t = (int*)input;
 	char* s = (char*)output;
-	sprintf(s, "%d", t[0]);
+	sprintf(s, "%d", t[0]);*/
 }
