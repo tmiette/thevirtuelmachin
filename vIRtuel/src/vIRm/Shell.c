@@ -185,7 +185,7 @@ static void sendWorkCommand(command * cmd) {
 
 			/* Build a job to send to target object */
 			/* Target object have to wake up the object */
-			createJob(&j, objects[objectIndex].pid, "waitfor", -1, -1);
+			createJob(&j, objects[objectIndex].pid, "waitfor", -1, getFreeBloc());
 			sendJob(targetObjIndex, &j);
 
 		} else {
@@ -418,7 +418,9 @@ static void freeMemSignalHandler(int sig, siginfo_t * info, void * useless) {
 	DEBUG(debug, printf("freeMemSignalHandler -> free memory zone (%d)\n",
 			info->si_value.sival_int));
 	/* A new shared memory bloc can be used by shell */
-	freeBloc(info->si_value.sival_int);
+	if (getBlockName(info->si_value.sival_int) == NULL) {
+		freeBloc(info->si_value.sival_int);
+	}
 }
 
 static void freeNamedBloc(int sig, siginfo_t * info, void * useless) {

@@ -177,11 +177,16 @@ char * getBlockName(int bloc) {
 
 int nameBloc(int bloc, char * name) {
 	if (name[0] != '\0' && isValidBloc(bloc) && blocs[bloc].blocValue == -1) {
-		DEBUG(debug, printf("nameBloc -> name (%s) given to bloc (%d)\n",
-				blocs[bloc].blocName, blocs[bloc].blocValue));
+		
 		blocs[bloc].blocValue = bloc;
 		strcpy(blocs[bloc].blocName, name);
+		DEBUG(debug, printf("nameBloc -> name (%s) given to bloc (%d)\n",
+						blocs[bloc].blocName, blocs[bloc].blocValue));
 	}
+	int i;
+	for (i = 0; i < BLOC_NUMBER; ++i) {
+			printf("index (%d), blocs[i].blocName (%s)\n", i, blocs[i].blocName);
+		}
 	return -1;
 }
 
