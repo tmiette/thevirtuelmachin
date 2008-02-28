@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
 	/* Open target library */
 	handle
 			= dlopen(
-					"/home/akiri/workspace/vIRtuel/objects_src/int2string.so",
+					"../../objects/int2string.so",
 					RTLD_LAZY);
 	if (!handle) {
 		perror("unable to open library\n");

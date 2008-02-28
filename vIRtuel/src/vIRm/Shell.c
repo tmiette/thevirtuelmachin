@@ -144,7 +144,7 @@ static void createNewObject(command * cmd) {
 			/* Close useless pipe out */
 			close(objects[index].pipe[0]);
 
-			if (execl("/home/akiri/workspace/vIRtuel/bin/launch", "launch",
+			if (execl("../../bin/launch", "launch",
 					"POUET", "mem", NULL) == -1) {
 				perror("execl");
 				exit(-1);
