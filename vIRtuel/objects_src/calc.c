@@ -31,7 +31,6 @@ void work(void* input, void* output) {
 
 	fprintf(stdout, "%d %c %d = %d;", i1, i2, op, res);
 
-	/*memcpy(output, &res, sizeof(int));*/
-	((int*)output)[0] = res;
-	
+	memcpy(output, &res, sizeof(int));
+
 }

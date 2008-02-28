@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 void work(void* input, void* output) {
 	
@@ -8,5 +9,5 @@ void work(void* input, void* output) {
 	string = (char*)input;
 	integer = atoi(string);
 	
-	((int*)output)[0] = integer;
+	memcpy(output, &integer, sizeof(int));
 }
