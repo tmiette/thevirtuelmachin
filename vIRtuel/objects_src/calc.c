@@ -37,7 +37,7 @@ void work(void* input, void* output) {
 		break;
 	}
 
-	fprintf(stdout, "%d %c %d = %d;", i, j, op, res);
+	fprintf(stdout, "%d %c %d = %d;", i, op, j, res);
 
 	memcpy(output, &res, sizeof(int));
 
