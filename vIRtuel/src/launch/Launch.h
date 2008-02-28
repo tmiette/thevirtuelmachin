@@ -11,11 +11,13 @@
 
 #define NAME_LENGTH 256
 #define FIFO_LENGTH BUFSIZ
+#define BLOC_MEM_LENGTH 1024
 
 #define next(i) ((i)<FIFO_LENGTH-1 ? ((i)+1) : 0)
 
 
 extern int debug;
+extern void * memory;
 
 typedef struct _job {
 	pid_t pid;

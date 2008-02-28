@@ -11,6 +11,7 @@ static int pushJob(job * j);
 static int popJob();
 static void copyJob(job * src, job * dest);
 static void handleJob(job * j);
+static void * getBloc(int index);
 
 void handleMem() {
 
@@ -47,7 +48,9 @@ static void handleJob(job * j) {
 						getpid()));
 
 		/* Execute work function */
-		(*ptWork)(NULL, NULL);
+		void * memIN = getBloc(j->memIn);
+		void * memOUT = getBloc(j->memOut);
+		(*ptWork)(memIN, memOUT);
 
 		/* Send signal to my father to say to free in memory zone */
 		union sigval sVal;
@@ -93,6 +96,12 @@ static void handleJob(job * j) {
 		}
 	}
 
+}
+
+static void * getBloc(int index) {
+	char * head= memory;
+	head += index * BLOC_MEM_LENGTH;
+	return head;
 }
 
 static int pushJob(job * j) {

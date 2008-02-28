@@ -22,14 +22,13 @@ typedef struct Bloc__ {
 	char blocName[BUFSIZ];
 } Bloc;
 
-void initSharedMemory();
+void initSharedMemory(char * memFile);
 int getFreeBloc();
 void freeBloc(int bloc);
 void closeSharedMemory();
 void fillBloc(int index, char * data);
-char * getBloc(int bloc);
+void * getBloc(int bloc);
 int getBlocByName(char * name);
-void writeParameters(char * par, void * output);
 int nameBloc(int bloc, char * name);
 
 #endif /*SHAREDMEMORY_*/

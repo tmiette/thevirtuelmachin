@@ -3,7 +3,7 @@
 //static char request[BUFSIZ];
 static object objects[MAX_OBJECT_NUMBER];
 static int pendingObjects[MAX_OBJECT_NUMBER]; //O -> pendind; 1 -> ready
-
+static char * MEM_NAME ="sharedmem";
 
 static void printPrompt();
 static void handleCommand(command * cmd);
@@ -145,7 +145,7 @@ static void createNewObject(command * cmd) {
 			close(objects[index].pipe[0]);
 
 			if (execl("../../bin/launch", "launch",
-					"POUET", "mem", NULL) == -1) {
+					"POUET", MEM_NAME, NULL) == -1) {
 				perror("execl");
 				exit(-1);
 			}
@@ -267,7 +267,7 @@ void launch() {
 	initSigActionHandler();
 	initPendingObjects();
 
-	initSharedMemory();
+	initSharedMemory(MEM_NAME);
 
 	initObjectsTab();
 

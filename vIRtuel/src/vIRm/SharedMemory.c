@@ -1,17 +1,17 @@
 #include "SharedMemory.h"
 
-static char * MEM_NAME ="sharedmem";
-static char * memory= NULL;
+static void * memory= NULL;
 static int memoryLength = 0;
 static Bloc blocs[BLOC_NUMBER];
 
+static void writeParameters(char * par, void * output);
 static int isValidBloc(int bloc);
 
-void initSharedMemory() {
+void initSharedMemory(char * memFile) {
 	int file;
 	struct stat info;
 	char * mem;
-	char c = '0';
+	char c = '\0';
 	int memLength;
 	int i;
 
@@ -20,7 +20,7 @@ void initSharedMemory() {
 		blocs[i].blocName[0] = '\0';
 	}
 
-	if ((file = open(MEM_NAME, 
+	if ((file = open(memFile, 
 	O_RDWR | O_CREAT | O_TRUNC, 0666)) == -1) {
 		perror("initSharedMemory -> open");
 		exit(-1);
@@ -35,7 +35,7 @@ void initSharedMemory() {
 	}
 
 	/* retrieve stats from file */
-	if (stat(MEM_NAME, &info) == -1) {
+	if (stat(memFile, &info) == -1) {
 		perror("initSharedMemory -> stat");
 		exit(-1);
 	}
@@ -90,20 +90,18 @@ void closeSharedMemory() {
 }
 
 void fillBloc(int index, char * data) {
-	int i = 0;
+	void * memHead;
 	if (isValidBloc(index)) {
 		DEBUG(debug, printf("fillBloc -> data to copy (%s), bloc (%d, %s)\n",
 				data, index, blocs[index].blocName));
-		while (data[i] != '\0') {
-			memory[index * BLOC_MEM_LENGTH + i] = data[i];
-			i++;
-		}
-		memory[index * BLOC_MEM_LENGTH + i] = '\0';
+		/* Set memory pointer to bloc specified */
+		memHead = memory + index * BLOC_MEM_LENGTH;
+		writeParameters(data, memHead);
 		blocs[index].blocValue = index;
 	}
 }
 
-void writeParameters(char * par, void * output) {
+static void writeParameters(char * par, void * output) {
 
 	char* tokens= NULL;
 	char* trimed= NULL;
@@ -122,7 +120,7 @@ void writeParameters(char * par, void * output) {
 		}
 		// variable case
 		else if (0) {
-
+//TODO
 		}
 		// string case
 		else {
@@ -134,10 +132,10 @@ void writeParameters(char * par, void * output) {
 	}
 }
 
-char * getBloc(int index) {
-	char * head= NULL;
+void * getBloc(int index) {
+	char * head= memory;
 	if (isValidBloc(index)) {
-		head = &memory[index * BLOC_MEM_LENGTH];
+		head += index * BLOC_MEM_LENGTH;
 	}
 	return head;
 }
