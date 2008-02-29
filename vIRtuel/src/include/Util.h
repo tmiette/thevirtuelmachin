@@ -1,7 +1,8 @@
 /**
  * @file Util.h
  * 
- * Defines some common functions and constant values.
+ * Defines some common functions and constant values usefull
+ * all over the program.
  * 
  */
 #ifndef UTIL_H_
@@ -31,14 +32,24 @@
 }
 
 /**
- * This function trim a string
+ * This function trim a string by removing the spaces charcaters at the
+ * beginning and at the end of the string. If the string given is delimited
+ * by double quotes, these quotes are removed too. The parameter string 
+ * is modified in this function.
  * 
  * @param toTrim the string to trim.
  * @return the trimed string.
  */
 char* trim(char* toTrim);
 
-
+/**
+ * This function trim a string by removing the spaces charcaters at the
+ * beginning and at the end of the string. The parameter string is modified
+ * in this function.
+ * 
+ * @param toTrim the string to trim.
+ * @return the trimed string.
+ */
 char* trim2(char* toTrim);
 
 /**
