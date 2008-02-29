@@ -11,4 +11,7 @@ void work(void* input, void* output) {
 	integer = atoi(string);
 	
 	memcpy(output, &integer, sizeof(int));
+	
+	
+/*	printf("STRING2INT -> (%s) (%d)\n", string, integer);*/
 }

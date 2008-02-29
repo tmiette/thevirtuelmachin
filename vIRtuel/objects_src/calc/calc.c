@@ -33,7 +33,7 @@ void work(void* input, void* output) {
 		break;
 	default:
 		fprintf(stderr, "%c isn't a correct operator.", op);
-		exit(EXIT_FAILURE);
+		return;
 		break;
 	}
 

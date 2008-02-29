@@ -265,7 +265,8 @@ static void sendJob(int objectIndex, job * j) {
 void launch() {
 	command cmd;
 	DEBUG(debug, printf("launch -> Shell pid (%d)\n", getpid()));
-
+	if('\0' == 0)
+printf("%d", sizeof(int));
 	if (signal(SIGINT, endShell) == SIG_ERR) {
 		perror("signal");
 		exit(-1);

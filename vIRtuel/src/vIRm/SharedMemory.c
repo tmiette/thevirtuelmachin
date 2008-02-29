@@ -3,7 +3,7 @@
 static void * memory= NULL;
 static int memoryLength = 0;
 static Bloc blocs[BLOC_NUMBER];
-
+static char END_BLOC_CHAR = '\n';
 static void writeParameters(char * par, void * output);
 static int isValidBloc(int bloc);
 static void * getBloc(int index);
@@ -12,7 +12,6 @@ void initSharedMemory(char * memFile) {
 	int file;
 	struct stat info;
 	char * mem;
-	char c = '\0';
 	int memLength;
 	int i;
 
@@ -29,7 +28,7 @@ void initSharedMemory(char * memFile) {
 
 	/* fill file with '0' */
 	for (i = 0; i < MEM_LENGTH; ++i) {
-		if (write(file, &c, 1) == -1) {
+		if (write(file, &END_BLOC_CHAR, 1) == -1) {
 			perror("initSharedMemory -> write");
 			exit(-1);
 		}
@@ -76,10 +75,16 @@ int getFreeBloc() {
 }
 
 void freeBloc(int index) {
+	int i = 0;
+	char * pt = (char*)getBloc(index);
+	
 	if (isValidBloc(index)) {
 		blocs[index].blocValue = -1;
 		blocs[index].blocName[0] = '\0';
-		bzero(getBloc(index), BLOC_MEM_LENGTH);
+		while(i != BLOC_MEM_LENGTH){
+			pt[i] = END_BLOC_CHAR;
+			i++;
+		}
 	}
 }
 
@@ -130,7 +135,7 @@ static void writeParameters(char * par, void * output) {
 				int len = 0;
 				int match = 0;
 				while (len < BLOC_MEM_LENGTH) {
-					if (*pt == '\0') {
+					if (*pt == END_BLOC_CHAR) {
 						pt++;
 						if (++match == 2) {
 							break;
@@ -143,7 +148,7 @@ static void writeParameters(char * par, void * output) {
 				}
 				memcpy(output, mem, len);
 				printf("maaaaaaaa len = %d", len);
-				output += len + 1;
+				output += len;
 			}
 			DEBUG(
 					debug,
@@ -153,7 +158,7 @@ static void writeParameters(char * par, void * output) {
 		}
 		// string case
 		else {
-			sprintf(output, "%s", trimed);
+			sprintf(output, "%s\0", trimed);
 			output += strlen(trimed) + 1;
 		}
 
