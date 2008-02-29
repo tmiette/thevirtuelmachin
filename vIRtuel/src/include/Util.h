@@ -13,35 +13,31 @@
 #define true 1
 #define false 0
 
+
 /**
----------------------------------------------------------------------------------
- MACRO DEFINITIONS.
- --------------------------------------------------------------------------------
- **/
-
-/* Macro to check an allocation validity */
-#define CHECK_ALLOCATION(pt) {\
-	if(pt == NULL){\
-		fprintf(stderr, "Memory not available\n");\
-		exit(1);\
-	}\
-}
-
-/* Macro to free memory and put the pointer to NULL */
-#define FREE(pt){\
-	free(pt);\
-	pt = NULL;\
-}
-
-/* Macro to print debug messages */
+ * Macro used to print debug messages.
+ */
 #define DEBUG(x,y){\
 	if((x) == 1){\
 		(y);\
 	}\
 }
 
+/**
+ * This function trim a string
+ * 
+ * @param toTrim the string to trim.
+ * @return the trimed string.
+ */
 char* trim(char* toTrim);
-int isDigit(char* string);
+char* trim2(char* toTrim);
 
+/**
+ * Tests if a string can be interpreted as an integer. Each character of the string is tested as a digit.
+ * 
+ * @param the string to test.
+ * @return 0 if the string can be interpreted as an integer, or -1.
+ */
+int isDigit(char* string);
 
 #endif /*UTIL_H_*/
