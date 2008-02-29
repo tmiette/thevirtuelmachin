@@ -3,6 +3,6 @@
 void work(void* input, void* output) {
 	
 	int* t = (int*)input;
-	sleep(t[0] * 1000);
+	sleep(t[0]);
 	
 }
