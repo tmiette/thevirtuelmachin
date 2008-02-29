@@ -7,6 +7,7 @@ static void * memory= NULL;
 static int memoryLength = 0;
 static void handleJob(job * j);
 static void * getBloc(int index);
+static void handler();
 
 void waitJob() {
 	job j;
@@ -151,6 +152,7 @@ void initSignals() {
 	sigprocmask( SIG_BLOCK, &mask, NULL);
 
 	struct sigaction sa;
+	sa.sa_sigaction = handler;
 	sa.sa_flags = 0;
 	sigaction(SIGUSR2,&sa,NULL);
 
@@ -165,4 +167,8 @@ void endLaunch() {
 	/* Close library */
 	dlclose(handle);
 	exit(EXIT_SUCCESS);
+}
+
+void handler(){
+	return;
 }
