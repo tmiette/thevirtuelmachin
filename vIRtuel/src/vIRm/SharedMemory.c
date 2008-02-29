@@ -65,8 +65,6 @@ void initSharedMemory(char * memFile) {
 int getFreeBloc() {
 	int i;
 	for (i = 0; i < BLOC_NUMBER; ++i) {
-		printf("getFreeBloc -> (%d) (%s)\n", blocs[i].blocValue,
-				blocs[i].blocName);
 		if (blocs[i].blocValue == -1) {
 			return i;
 		}
@@ -108,6 +106,11 @@ void fillBloc(int index, char * data) {
 	}
 }
 
+/**
+ * Write binary arguments to output memory.
+ * @param char * arguments to write.
+ * @param void * memory pointer.
+ */
 static void writeParameters(char * par, void * output) {
 
 	char* tokens= NULL;
@@ -119,7 +122,6 @@ static void writeParameters(char * par, void * output) {
 	while (tokens != NULL) {
 
 		trimed = trim2(tokens);
-printf("%s\n", trimed);
 		
 		// integer case
 		if (isDigit(trimed)) {
@@ -148,19 +150,12 @@ printf("%s\n", trimed);
 					}
 				}
 				memcpy(output, mem, len);
-				printf("maaaaaaaa len = %d", len);
 				output += len;
 			}
-			DEBUG(
-					debug,
-					printf(
-							"writeParameters -> variable (%s) at bloc (%d) (mem=%d, out=%d)\n",
-							trimed, bloc, mem, output));
 		}
 		// string case
 		else {
 			trimed = trim(trimed);
-			printf("trimed qcqscqsc   %s\n", trimed);
 			sprintf(output, "%s\0", trimed);
 			output += strlen(trimed) + 1;
 		}
@@ -169,10 +164,6 @@ printf("%s\n", trimed);
 	}
 }
 
-/**
- * Checks validy of the memory bloc index. Returns 1 if index is valid, 0 otherwise.
- * @param int index index to check the validity.
- */
 int isValidBloc(int index) {
 	if (index >= 0 && index < BLOC_NUMBER && memoryLength != 0) {
 		return 1;
@@ -180,9 +171,6 @@ int isValidBloc(int index) {
 	return 0;
 }
 
-/**
- * Returns the bloc corresponding to the given name or -1 if name is unknow.
- */
 int getBlocByName(char * name) {
 	int i;
 	for (i = 0; i < BLOC_NUMBER; ++i) {
@@ -212,6 +200,11 @@ int nameBloc(int bloc, char * name) {
 	return -1;
 }
 
+/**
+ * Returns a memory pointer to the bloc corresponding.
+ * @param int bloc number required
+ * @return void * memory pointer
+ */
 static void * getBloc(int index) {
 	char * head= memory;
 	head += index * BLOC_MEM_LENGTH;

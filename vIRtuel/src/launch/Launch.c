@@ -1,6 +1,6 @@
 #include "Launch.h"
 
-extern void (*ptWork)(void*, void*);
+extern void (*ptWork)(void*, void*); // Work pointer function
 extern void * handle;
 static sigset_t mask;
 static void * memory= NULL;
@@ -9,6 +9,9 @@ static void handleJob(job * j);
 static void * getBloc(int index);
 static void handler();
 
+/**
+ * Read on stdin and wait a job structure
+ */
 void waitJob() {
 	job j;
 
@@ -31,6 +34,9 @@ void waitJob() {
 	}
 }
 
+/**
+ * Handle a job structure comes from shell
+ */
 static void handleJob(job * j) {
 	DEBUG(debug, printf("handleJob -> object (%d) function (%s)\n", getpid(),
 			j->functionName));
@@ -90,12 +96,18 @@ static void handleJob(job * j) {
 
 }
 
+/**
+ * Gets a memory pointer thanks to the bloc number
+ */
 static void * getBloc(int index) {
 	char * head= memory;
 	head += index * BLOC_MEM_LENGTH;
 	return head;
 }
 
+/**
+ * Map the given file in memory.
+ */
 void openMemMapFile(char * memFile) {
 	int file;
 	struct stat info;
@@ -132,6 +144,9 @@ void openMemMapFile(char * memFile) {
 	close(file);
 }
 
+/**
+ * Close the mapped memory file
+ */
 static void closeSharedMemory() {
 	if (munmap(NULL, memoryLength) == -1) {
 		perror("initSharedMemory -> munmap");
@@ -140,6 +155,9 @@ static void closeSharedMemory() {
 
 }
 
+/**
+ * Initializes signals
+ */
 void initSignals() {
 
 	if (signal(SIGINT, endLaunch) == SIG_ERR) {
@@ -161,6 +179,9 @@ void initSignals() {
 
 }
 
+/**
+ * Close processus
+ */
 void endLaunch() {
 	DEBUG(debug, printf("endLaunch -> end object (%d)\n", getpid()));
 	closeSharedMemory();
@@ -169,6 +190,9 @@ void endLaunch() {
 	exit(EXIT_SUCCESS);
 }
 
+/**
+ * Default handler nothing to do in .
+ */
 void handler(){
 	return;
 }

@@ -35,6 +35,11 @@ void splitCommand(command * cmd) {
 	return;
 }
 
+/**
+ * Permits to fill command structure with a potential variable.
+ * @param char ** bufferHead string pointer to split.
+ * @param command * cmd command to fill.
+ */
 static void extractVar(char ** bufferHead, command * cmd) {
 	char * pEq = strchr(*bufferHead, '=');
 	char * pQuote = strchr(*bufferHead, '"');
@@ -47,6 +52,11 @@ static void extractVar(char ** bufferHead, command * cmd) {
 	return;
 }
 
+/**
+ * Permits to fill command structure with a potential object nale.
+ * @param char ** bufferHead string pointer to split.
+ * @param command * cmd command to fill.
+ */
 static void extractObjectName(char ** bufferHead, command * cmd) {
 	char * pPt = strchr(*bufferHead, '.');
 	char * pQuote = strchr(*bufferHead, '"');
@@ -62,6 +72,11 @@ static void extractObjectName(char ** bufferHead, command * cmd) {
 	return;
 }
 
+/**
+ * Permits to fill command structure with a potential function name.
+ * @param char ** bufferHead string pointer to split.
+ * @param command * cmd command to fill.
+ */
 static void extractFunction(char ** bufferHead, command * cmd) {
 	char * pQuote = strchr(*bufferHead, '"');
 	char * p = strchr(*bufferHead, '(');
@@ -83,6 +98,11 @@ static void extractFunction(char ** bufferHead, command * cmd) {
 	return;
 }
 
+/**
+ * Permits to fill command structure with a potential free function name.
+ * @param char ** bufferHead string pointer to split.
+ * @param command * cmd command to fill.
+ */
 static void extractFreeFun(char ** bufferHead, command * cmd) {
 	char * fr = "free";
 	char * pQuote = strchr(*bufferHead, '"');
@@ -104,6 +124,11 @@ static void extractFreeFun(char ** bufferHead, command * cmd) {
 	return;
 }
 
+/**
+ * Permits to fill command structure with a potential waitfor pattern.
+ * @param char ** bufferHead string pointer to split.
+ * @param command * cmd command to fill.
+ */
 static void extractWaitfor(char ** bufferHead, command * cmd) {
 	char * fr = "waitfor";
 	char * pQuote = strchr(*bufferHead, '"');
@@ -125,6 +150,12 @@ static void extractWaitfor(char ** bufferHead, command * cmd) {
 	return;
 }
 
+/**
+ * Permits to fill command structure with a potential new pattern and
+ * its arguments.
+ * @param char ** bufferHead string pointer to split.
+ * @param command * cmd command to fill.
+ */
 static void extractNew(char ** bufferHead, command * cmd) {
 	char * token = "new";
 	char * pQuote = strchr(*bufferHead, '"');

@@ -1,10 +1,18 @@
+/**
+ * @file Main.c
+ * 
+ * author MIETTE Tom
+ * author MOURET Sebastien
+ * 
+ * Launch default main
+ */
 #include <dlfcn.h>
 #include "Launch.h"
 sigset_t mask;
 int debug = true;
 void (*ptWork)(void*, void*)= NULL;
 void * handle= NULL;
-static char * PIPE_NAMED = "pipeNamed";
+static char * PIPE_NAMED = "pipeNamed"; // named pipe path
 
 int main(int argc, char **argv) {
 	int fd;
@@ -21,14 +29,12 @@ int main(int argc, char **argv) {
 	setvbuf(stdout, NULL, _IONBF, 0);
 
 	/* Open tube mkfifo */
-		if ((fd = open(PIPE_NAMED,
-				0666)) == -1) {
+	if ((fd = open(PIPE_NAMED, 0666)) == -1) {
 		perror("launch : open mkfifo");
 	}
 	dup2(fd, 1);
 
 	/* Open target library */
-	printf("lib : %s\n", argv[1]);
 	handle = dlopen(argv[1], 
 	RTLD_LAZY);
 	if (!handle) {

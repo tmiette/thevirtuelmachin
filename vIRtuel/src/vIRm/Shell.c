@@ -1,15 +1,14 @@
 #include "Shell.h"
 
-//static char request[BUFSIZ];
-static object objects[MAX_OBJECT_NUMBER];
+static object objects[MAX_OBJECT_NUMBER]; // Shell's objects
 static int pendingObjects[MAX_OBJECT_NUMBER]; //O -> pendind; 1 -> ready
-static char * MEM_NAME ="sharedmem";
-static char * LIB_PATH = "../objects/";
-static char * PIPE_NAMED = "pipeNamed";
-static char * LAUNCH = "launch";
+static char * MEM_NAME ="sharedmem"; // Shared memory file name
+static char * LIB_PATH = "../objects/"; // Library path
+static char * PIPE_NAMED = "pipeNamed"; // Pipe name file name
+static char * LAUNCH = "launch"; // Launch executable
+
 static void printPrompt();
 static void handleCommand(command * cmd);
-static void printCommand(command * cmd);
 static void initCommandStruct(command * cmd);
 static void initObjectStruct(object * obj);
 static void initObjectsTab();
@@ -57,6 +56,10 @@ static void printPrompt() {
 	DEBUG(debug, printf("printPrompt -> line entered : %s\n", buffer));
 }
 
+/**
+ * Handles a command by call corresponding function.
+ * @param command * command to handle
+ */
 static void handleCommand(command * cmd) {
 	if (cmd != NULL) {
 		if (strcmp(cmd->functionName, "work") == 0) {
@@ -78,6 +81,9 @@ static void handleCommand(command * cmd) {
 	}
 }
 
+/**
+ * Sends a waitall job structure to all objects.
+ */
 static void waitAllObjects() {
 	int i = 0;
 	job j;
@@ -95,6 +101,10 @@ static void waitAllObjects() {
 	}
 }
 
+/**
+ * Interprets a free command
+ * @param command * command
+ */
 static void freeVar(command * cmd) {
 	int targetObjIndex = getObjIndexByName(cmd->targetObject);
 	job j;
@@ -118,6 +128,10 @@ static void freeVar(command * cmd) {
 	}
 }
 
+/**
+ * Interprets a new command by creating object.
+ * @param command * command
+ */
 static void createNewObject(command * cmd) {
 	/* Create object only if it is new */
 	if (cmd->targetObject[0] != '\0' && getObjIndexByName(cmd->targetObject)
@@ -172,6 +186,10 @@ static void createNewObject(command * cmd) {
 	}
 }
 
+/**
+ * Interprets a send command by sending a job structure to objct.
+ * @param command * command
+ */
 static void sendWorkCommand(command * cmd) {
 
 	int objectIndex;
@@ -213,12 +231,8 @@ static void sendWorkCommand(command * cmd) {
 				exit(-1);
 			}
 			/* Associate variable name to bloc number */
-			printf("variable ========= name = (%s)   val = (%d)\n", cmd->var,
-					memOUT);
 			nameBloc(memOUT, cmd->var);
 		}
-
-		printf("ma chaine argv : (%s) (%d)", cmd->argv, strlen(cmd->argv));
 
 		if (strlen(cmd->argv) != 0) {
 			/* Get a free bloc memory */
@@ -230,7 +244,6 @@ static void sendWorkCommand(command * cmd) {
 			/* Fill bloc memIN with work function arguments */
 			fillBloc(memIN, cmd->argv);
 		}
-		printf("memIN (%d) memOUT (%d)\n", memIN, memOUT);
 
 		/* Build job object and send it to object */
 		createJob(&j, getpid(), "work", memIN, memOUT);
@@ -243,6 +256,14 @@ static void sendWorkCommand(command * cmd) {
 	}
 }
 
+/**
+ * Fills the given job structure with parameters.
+ * @param job * job to fill
+ * @param pid_t pid to set
+ * @param char * function name to set
+ * @param int bloc to set
+ * @param int bloc to set
+ */
 static void createJob(job * j, pid_t pid, char * fun, int memIn, int memOut) {
 	j->pid = pid;
 	strcpy(j->functionName, fun);
@@ -250,6 +271,11 @@ static void createJob(job * j, pid_t pid, char * fun, int memIn, int memOut) {
 	j->memOut = memOut;
 }
 
+/**
+ * Sends a job structure to the given object
+ * @param int object's index
+ * @param job * job to send
+ */
 static void sendJob(int objectIndex, job * j) {
 	/* Send job to object */
 	if (write(objects[objectIndex].pipe[1], j, sizeof(job)) == -1) {
@@ -265,17 +291,19 @@ static void sendJob(int objectIndex, job * j) {
 
 }
 
+/**
+ * Launch the shell
+ */
 void launch() {
 	command cmd;
 	DEBUG(debug, printf("launch -> Shell pid (%d)\n", getpid()));
-	if ('\0' == 0)
-		printf("%d", sizeof(int));
 	if (signal(SIGINT, endShell) == SIG_ERR) {
 		perror("signal");
 		exit(-1);
 	}
 
 	initSigActionHandler();
+	
 	initPendingObjects();
 
 	initSharedMemory(MEM_NAME);
@@ -288,13 +316,15 @@ void launch() {
 		initCommandStruct(&cmd);
 		printPrompt();
 		splitCommand(&cmd);
-		//		printCommand(&cmd);
 		handleCommand(&cmd);
 		bzero(buffer, CMD_LENGTH);
 	}
 
 }
 
+/**
+ * Wash shell when it is ending.
+ */
 static void endShell() {
 	int i = 0;
 	pid_t pid;
@@ -310,15 +340,10 @@ static void endShell() {
 	exit(EXIT_SUCCESS);
 }
 
-static void printCommand(command * cmd) {
-	if (cmd != NULL) {
-		printf(
-				"ObjectName=%s, Function=%s, Arguments=%s, Variable=%s, TargetObject=%s, WaitFor=%d\n",
-				cmd->objectName, cmd->functionName, cmd->argv, cmd->var,
-				cmd->targetObject, cmd->waitFor);
-	}
-}
-
+/**
+ * Initializes a command structure
+ * @param command * command to intializes
+ */
 static void initCommandStruct(command * cmd) {
 	cmd->argv[0] = '\0';
 	cmd->functionName[0] = '\0';
@@ -328,11 +353,18 @@ static void initCommandStruct(command * cmd) {
 	cmd->waitFor = 0;
 }
 
+/**
+ * Initializes an object
+ * @param object * 
+ */
 static void initObjectStruct(object * obj) {
 	obj->name[0] = '\0';
 	obj->pid = -1;
 }
 
+/**
+ * Initializes a objects array
+ */
 static void initObjectsTab() {
 	int i;
 	for (i = 0; i < MAX_OBJECT_NUMBER; ++i) {
@@ -340,6 +372,9 @@ static void initObjectsTab() {
 	}
 }
 
+/** 
+ * returns a free index array
+ */
 static int getFreeObjectsTabIndex() {
 	int i;
 	for (i = 0; i < MAX_OBJECT_NUMBER; ++i) {
@@ -349,6 +384,12 @@ static int getFreeObjectsTabIndex() {
 	}
 	return -1;
 }
+
+/**
+ * Returns an object index by its name
+ * @param char * object name
+ * @return int object index
+ */
 static int getObjIndexByName(char * objectName) {
 	int i;
 	for (i = 0; i < MAX_OBJECT_NUMBER; ++i) {
@@ -363,6 +404,11 @@ static int getObjIndexByName(char * objectName) {
 	return -1;
 }
 
+/**
+ * Returns an object index by its pid
+ * @param char * object name
+ * @return int object index
+ */
 static int getObjIndexByPid(int pid) {
 	int i;
 	for (i = 0; i < MAX_OBJECT_NUMBER; ++i) {
@@ -375,8 +421,11 @@ static int getObjIndexByPid(int pid) {
 	return -1;
 }
 
+/**
+ * Created the named fifo
+ * @param char * named fifo file
+ */
 static int initMkfifo(char * fifoName) {
-//	mode_t mode= S_IRUSR | S_IRGRP | S_IROTH | S_IWUSR | S_IWGRP | S_IWOTH;
 	if (mkfifo(fifoName, 0666) == -1) {
 		perror("mkfifo");
 		return -1;
@@ -384,6 +433,9 @@ static int initMkfifo(char * fifoName) {
 	return 0;
 }
 
+/**
+ * Sets pending objects to null.
+ */
 static void initPendingObjects() {
 	int i;
 	for (i = 0; i < MAX_OBJECT_NUMBER; ++i) {
@@ -391,6 +443,9 @@ static void initPendingObjects() {
 	}
 }
 
+/**
+ * Handler called when a object is ready to be started
+ */
 static void pendingObjectHandler(int sig, siginfo_t * info, void * useless) {
 	DEBUG(debug, printf("pendingObjectHandler -> SIGUSR1 received from (%d)\n",
 			info->si_pid));
@@ -418,6 +473,9 @@ static void pendingObjectHandler(int sig, siginfo_t * info, void * useless) {
 
 }
 
+/**
+ * Test if all object are ready
+ */
 static int allObjectsReady() {
 	int i;
 	for (i = 0; i < MAX_OBJECT_NUMBER; ++i) {
@@ -430,6 +488,9 @@ static int allObjectsReady() {
 	return true;
 }
 
+/**
+ * Handler called when an object wants to free a bloc
+ */
 static void freeMemSignalHandler(int sig, siginfo_t * info, void * useless) {
 
 	/* A new shared memory bloc can be used by shell */
@@ -441,6 +502,9 @@ static void freeMemSignalHandler(int sig, siginfo_t * info, void * useless) {
 	}
 }
 
+/**
+ * Handler called when an object wants to free a variable
+ */
 static void freeNamedBloc(int sig, siginfo_t * info, void * useless) {
 	DEBUG(debug, printf("freeNamedBloc -> free memory zone (%d) named (%s)\n",
 			info->si_value.sival_int, getBlockName(info->si_value.sival_int)));
@@ -448,12 +512,16 @@ static void freeNamedBloc(int sig, siginfo_t * info, void * useless) {
 	freeBloc(info->si_value.sival_int);
 }
 
+/**
+ * Init process to response to signals
+ */
 static void initSigActionHandler() {
 	sigset_t mask;
 	struct sigaction action;
 	struct sigaction action2;
 	struct sigaction action3;
 
+	/* Initializes the SIGUSR1 signal */
 	if (sigemptyset(&mask) == -1) {
 		perror("initSigActionHandler -> sigemptyset");
 		exit(-1);
@@ -474,6 +542,7 @@ static void initSigActionHandler() {
 		exit(-1);
 	}
 
+	/* Initializes the SIGRTMIN signal */
 	if (sigemptyset(&mask) == -1) {
 		perror("initSigActionHandler -> sigemptyset");
 		exit(-1);
@@ -494,6 +563,7 @@ static void initSigActionHandler() {
 		exit(-1);
 	}
 
+	/* Initializes the SIGRTMIN+1 signal */
 	if (sigemptyset(&mask) == -1) {
 		perror("initSigActionHandler -> sigemptyset");
 		exit(-1);
