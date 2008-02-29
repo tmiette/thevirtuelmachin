@@ -20,8 +20,8 @@ export CFLAGS = -Wall -ansi -fPIC
 # Sub-directories
 CALC_DIR = ./calc
 INT2STRING_DIR = ./int2string
-STRING2INT_DIR = ./string2int
 PRINTER_DIR = ./printer
+SLEEPER_DIR = ./sleeper
 
 all: libs
 
@@ -29,8 +29,8 @@ all: libs
 libs:
 	@(cd $(CALC_DIR) && $(MAKE))
 	@(cd $(INT2STRING_DIR) && $(MAKE))
-	@(cd $(STRING2INT_DIR) && $(MAKE))
 	@(cd $(PRINTER_DIR) && $(MAKE))
+	@(cd $(SLEEPER_DIR) && $(MAKE))
 	
 .PHONY: clean
 
@@ -38,8 +38,8 @@ libs:
 clean:
 	@(cd $(CALC_DIR) && $(MAKE) $@)
 	@(cd $(INT2STRING_DIR) && $(MAKE) $@)
-	@(cd $(STRING2INT_DIR) && $(MAKE) $@)
 	@(cd $(PRINTER_DIR) && $(MAKE) $@)
+	@(cd $(SLEEPER_DIR) && $(MAKE) $@)
 	@echo ----------------------------
 	@echo Removing files
 	@echo ----------------------------

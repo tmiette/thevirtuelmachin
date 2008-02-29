@@ -3,16 +3,16 @@
 #Version : 1.0
 #Authors : Tom Miette & Sebastien Mouret
 #-----------------------------------------------------------
-#makefile to create string2int.so library
+#makefile to create sleeper.so library
 #Created February 28, 2008 by Tom Miette & Sebastien Mouret
 #===========================================================
 
 # Source files
-export SRC = $(SRC_DIR)string2int.c
+export SRC = $(SRC_DIR)sleeper.c
 # Object files
 OBJ = $(SRC:.c=.o)
 # Library
-LIB = $(LIB_DIR)string2int.so
+LIB = $(LIB_DIR)sleeper.so
 
 all: $(LIB)
 

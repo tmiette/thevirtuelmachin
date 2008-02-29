@@ -6,5 +6,4 @@ void work(void* input, void* output) {
 	char* s = (char*)output;
 	sprintf(s, "%d", t[0]);
 	
-	printf("INT2STRING -> (%d) (%s)\n", t[0], s);
 }
