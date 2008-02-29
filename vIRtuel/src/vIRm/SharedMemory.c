@@ -118,8 +118,9 @@ static void writeParameters(char * par, void * output) {
 	tokens = strtok(par, ",");
 	while (tokens != NULL) {
 
-		trimed = trim(tokens);
-
+		trimed = trim2(tokens);
+printf("%s\n", trimed);
+		
 		// integer case
 		if (isDigit(trimed)) {
 			integer = atoi(trimed);
@@ -158,6 +159,8 @@ static void writeParameters(char * par, void * output) {
 		}
 		// string case
 		else {
+			trimed = trim(trimed);
+			printf("trimed qcqscqsc   %s\n", trimed);
 			sprintf(output, "%s\0", trimed);
 			output += strlen(trimed) + 1;
 		}

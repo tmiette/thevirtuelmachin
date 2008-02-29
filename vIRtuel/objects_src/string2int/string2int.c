@@ -13,5 +13,5 @@ void work(void* input, void* output) {
 	memcpy(output, &integer, sizeof(int));
 	
 	
-/*	printf("STRING2INT -> (%s) (%d)\n", string, integer);*/
+	printf("STRING2INT -> (%s) (%d)\n", string, integer);
 }
