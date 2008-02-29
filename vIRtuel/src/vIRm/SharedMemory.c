@@ -61,13 +61,13 @@ void initSharedMemory(char * memFile) {
 
 	close(file);
 
-	DEBUG(debug, printf("initSharedMemory -> done\n"));
-
 }
 
 int getFreeBloc() {
 	int i;
 	for (i = 0; i < BLOC_NUMBER; ++i) {
+		printf("getFreeBloc -> (%d) (%s)\n", blocs[i].blocValue,
+				blocs[i].blocName);
 		if (blocs[i].blocValue == -1) {
 			return i;
 		}
@@ -97,7 +97,7 @@ void fillBloc(int index, char * data) {
 		DEBUG(debug, printf("fillBloc -> data to copy (%s), bloc (%d, %s)\n",
 				data, index, blocs[index].blocName));
 		/* Set memory pointer to bloc specified */
-		memHead = memory + index * BLOC_MEM_LENGTH;
+		memHead = memory + (index * BLOC_MEM_LENGTH);
 		writeParameters(data, memHead);
 		blocs[index].blocValue = index;
 	}
@@ -125,33 +125,31 @@ static void writeParameters(char * par, void * output) {
 		else if ((bloc = getBlocByName(trimed)) != -1) {
 			/* Get memory pointer corresponding to variable */
 			void * mem = getBloc(bloc);
-			/*		if (mem != NULL) {
-			 char * pt = (char *)mem;
-			 int len = 1;
-			 int match = 0;
-			 while(len < BLOC_MEM_LENGTH ){
-			 if (*pt == '\0') {
-			 if (++match == 2) {
-			 break;
-			 }
-			 }
-			 else {
-			 match = 0;
-			 }
-			 pt++;
-			 len++;
-			 printf("len = %d\n", len);
-			 printf("-------------------------->  %c", *pt);
-			 }
-			 memcpy(output, mem, len);
-			 output += len + 1;
-			 }*/
+			if (mem != NULL) {
+				char * pt = (char *)mem;
+				int len = 0;
+				int match = 0;
+				while (len < BLOC_MEM_LENGTH) {
+					if (*pt == '\0') {
+						pt++;
+						if (++match == 2) {
+							break;
+						}
+					} else {
+						match = 0;
+						pt++;
+						len++;
+					}
+				}
+				memcpy(output, mem, len);
+				printf("maaaaaaaa len = %d", len);
+				output += len + 1;
+			}
 			DEBUG(
 					debug,
 					printf(
 							"writeParameters -> variable (%s) at bloc (%d) (mem=%d, out=%d)\n",
 							trimed, bloc, mem, output));
-			memcpy(output, mem, BLOC_MEM_LENGTH);
 		}
 		// string case
 		else {
@@ -169,10 +167,8 @@ static void writeParameters(char * par, void * output) {
  */
 int isValidBloc(int index) {
 	if (index >= 0 && index < BLOC_NUMBER && memoryLength != 0) {
-		DEBUG(debug, printf("isValidBloc -> valid bloc (%d)\n", index));
 		return 1;
 	}
-	DEBUG(debug, printf("isValidBloc -> not a valid bloc (%d)\n", index));
 	return 0;
 }
 
@@ -182,7 +178,6 @@ int isValidBloc(int index) {
 int getBlocByName(char * name) {
 	int i;
 	for (i = 0; i < BLOC_NUMBER; ++i) {
-		printf("index (%d), blocs[i].blocName (%s)\n", i, blocs[i].blocName);
 		if (name[0] != '\0' && strcmp(blocs[i].blocName, name) == 0) {
 			return blocs[i].blocValue;
 		}
@@ -198,16 +193,13 @@ char * getBlockName(int bloc) {
 }
 
 int nameBloc(int bloc, char * name) {
-	if (name[0] != '\0' && isValidBloc(bloc) && blocs[bloc].blocValue == -1) {
+	if (isValidBloc(bloc) && blocs[bloc].blocValue == -1) {
 
 		blocs[bloc].blocValue = bloc;
 		strcpy(blocs[bloc].blocName, name);
 		DEBUG(debug, printf("nameBloc -> name (%s) given to bloc (%d)\n",
 				blocs[bloc].blocName, blocs[bloc].blocValue));
-	}
-	int i;
-	for (i = 0; i < BLOC_NUMBER; ++i) {
-		printf("index (%d), blocs[i].blocName (%s)\n", i, blocs[i].blocName);
+		return 1;
 	}
 	return -1;
 }

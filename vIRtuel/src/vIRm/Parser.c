@@ -40,7 +40,7 @@ static void extractVar(char ** bufferHead, command * cmd) {
 	char * pQuote = strchr(*bufferHead, '"');
 	if ((pEq != NULL && pQuote == NULL) || (pEq != NULL && pQuote != NULL
 			&& (pQuote > pEq))) {
-		strcpy(cmd->var, strtok(*bufferHead, "="));
+		strcpy(trim(cmd->var), strtok(*bufferHead, "="));
 		DEBUG(debug, printf("extractVar -> variable (%s)\n", cmd->var));
 		(*bufferHead) = pEq + 1;
 	}
@@ -74,7 +74,7 @@ static void extractFunction(char ** bufferHead, command * cmd) {
 		/* Retrieving arguments of the function */
 		char * p = strchr(*bufferHead, ')');
 		if (p != NULL) {
-			strcpy(cmd->argv, strtok(*bufferHead, ")"));
+			strcpy(trim(cmd->argv), strtok(*bufferHead, ")"));
 			DEBUG(debug, printf("extractFunction -> arguments (%s)\n",
 					cmd->argv));
 			(*bufferHead) = p + 1;
@@ -96,7 +96,7 @@ static void extractFreeFun(char ** bufferHead, command * cmd) {
 		/* Extract argument of free command */
 		p = strtok(*bufferHead, " ");
 		if (p != NULL) {
-			strcpy(cmd->var, p);
+			strcpy(trim(cmd->var), p);
 			DEBUG(debug, printf("extractFreeFun -> variable (%s)\n", cmd->var));
 			(*bufferHead) = p + 1;
 		}

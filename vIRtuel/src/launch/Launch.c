@@ -3,7 +3,7 @@
 extern void (*ptWork)(void*, void*);
 extern void * handle;
 static sigset_t mask;
-static void * memory = NULL;
+static void * memory= NULL;
 static int memoryLength = 0;
 static void handleJob(job * j);
 static void * getBloc(int index);
@@ -31,12 +31,12 @@ void waitJob() {
 }
 
 static void handleJob(job * j) {
-	DEBUG(debug, printf("handleJob -> function (%s)\n", j->functionName));
+	DEBUG(debug, printf("handleJob -> object (%d) function (%s)\n", getpid(),
+			j->functionName));
 	/* do it */
 	if (strcmp(j->functionName, "work") == 0) {
-		DEBUG(debug,
-				printf("handleJob -> object (%d) received function (work)\n",
-						getpid()));
+		DEBUG(debug, printf("handleJob -> work (%d) (%s) (%d) (%d)\n", j->pid,
+				j->functionName, j->memIn, j->memOut));
 
 		/* Execute work function */
 		void * memIN = getBloc(j->memIn);

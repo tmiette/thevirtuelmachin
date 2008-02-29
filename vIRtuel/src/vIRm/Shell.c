@@ -142,15 +142,15 @@ static void createNewObject(command * cmd) {
 
 			/* Close useless pipe out */
 			close(objects[index].pipe[0]);
-			
+
 			/* Create object's library name : objectName.so */
 			char libName[NAME_LENGTH];
 			strcpy(libName, LIB_PATH);
 			strcat(libName, cmd->argv);
 			strcat(libName, ".so");
 
-			if (execl("../../bin/launch", "launch",
-					libName, MEM_NAME, NULL) == -1) {
+			if (execl("../../bin/launch", "launch", libName, MEM_NAME, NULL)
+					== -1) {
 				perror("execl");
 				exit(-1);
 			}
@@ -190,7 +190,8 @@ static void sendWorkCommand(command * cmd) {
 
 			/* Build a job to send to target object */
 			/* Target object have to wake up the object */
-			createJob(&j, objects[objectIndex].pid, "waitfor", -1, getFreeBloc());
+			createJob(&j, objects[objectIndex].pid, "waitfor", -1,
+					getFreeBloc());
 			sendJob(targetObjIndex, &j);
 
 		} else {
@@ -200,34 +201,35 @@ static void sendWorkCommand(command * cmd) {
 		int memIN = -1;
 		int memOUT = -1;
 
-		/* Check variable presence to specify bloc memory in to son */
-		if (cmd->var[0] != '\0') {
-			/* Check if variable name is already associated */
-			memOUT = getBlocByName(cmd->var);
-			if (memOUT == -1) {
-				/* Get a free bloc memory */
-				if ((memOUT = getFreeBloc()) == -1) {
-					fprintf(stderr, "SharedMemory : no more space available");
-					exit(-1);
-				}
-				/* Associate variable name to bloc number */
-				printf("variable ========= name = (%s)   val = (%d)\n", cmd->var, memOUT);
-				nameBloc(memOUT, cmd->var);
+		/* Check if variable name is already associated */
+		memOUT = getBlocByName(cmd->var);
+		if (memOUT == -1) {
+			/* Get a free bloc memory */
+			if ((memOUT = getFreeBloc()) == -1) {
+				fprintf(stderr, "SharedMemory : no more space available");
+				exit(-1);
 			}
-			DEBUG(debug, printf(
-					"sendWorkCommand -> variable present, memOUT= (%d)\n",
-					memOUT));
+			/* Associate variable name to bloc number */
+			printf("variable ========= name = (%s)   val = (%d)\n", cmd->var,
+					memOUT);
+			nameBloc(memOUT, cmd->var);
 		}
 
-		/* Get a free bloc memory */
-		if ((memIN = getFreeBloc()) == -1) {
-			fprintf(stderr, "SharedMemory : no more space available");
-			exit(-1);
-		}
-		/* Fill bloc memIN with work function arguments */
-		fillBloc(memIN, cmd->argv);
+		printf("ma chaine argv : (%s) (%d)", cmd->argv, strlen(cmd->argv));
 
-		/* Build job object and send job to object */
+		if (strlen(cmd->argv) != 0) {
+			/* Get a free bloc memory */
+			if ((memIN = getFreeBloc()) == -1) {
+				fprintf(stderr, "SharedMemory : no more space available");
+				exit(-1);
+			}
+
+			/* Fill bloc memIN with work function arguments */
+			fillBloc(memIN, cmd->argv);
+		}
+		printf("memIN (%d) memOUT (%d)\n", memIN, memOUT);
+
+		/* Build job object and send it to object */
 		createJob(&j, getpid(), "work", memIN, memOUT);
 		sendJob(objectIndex, &j);
 	}
@@ -297,7 +299,7 @@ static void endShell() {
 	int i = 0;
 	pid_t pid;
 	DEBUG(debug, printf("endShell -> end shell\n"));
-	
+
 	/* Kill all my objects */
 	for (i = 0; i < MAX_OBJECT_NUMBER; ++i) {
 		if ((pid = objects[i].pid) != -1) {
@@ -428,10 +430,12 @@ static int allObjectsReady() {
 }
 
 static void freeMemSignalHandler(int sig, siginfo_t * info, void * useless) {
-	DEBUG(debug, printf("freeMemSignalHandler -> free memory zone (%d)\n",
-			info->si_value.sival_int));
+
 	/* A new shared memory bloc can be used by shell */
-	if (getBlockName(info->si_value.sival_int) == NULL) {
+	if (strlen(getBlockName(info->si_value.sival_int)) == 0
+			|| getBlockName(info->si_value.sival_int) == NULL) {
+		DEBUG(debug, printf("freeMemSignalHandler -> free memory zone (%d)\n",
+				info->si_value.sival_int));
 		freeBloc(info->si_value.sival_int);
 	}
 }
