@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
 	int fd;
 	char c;
 
-	if ((fd = open("/home/akiri/Documents/workspace/vIRtuel/bin/montube", O_RDONLY)) == -1) {
+	if ((fd = open("../../bin/mytube", O_RDONLY)) == -1) {
 		perror("open mkfifo");
 		exit(-1);
 	}
