@@ -4,9 +4,9 @@ sigset_t mask;
 int debug = true;
 void (*ptWork)(void*, void*)= NULL;
 void * handle= NULL;
-int fd = 0;
 
 int main(int argc, char **argv) {
+	int fd;
 
 	if (argc != 3) {
 		perror("launch usage : 'launch' 'object' 'shared memory' ");
@@ -20,10 +20,9 @@ int main(int argc, char **argv) {
 	setvbuf(stdout, NULL, _IONBF, 0);
 
 	/* Open tube mkfifo */
-	if ((fd = open("../../bin/mytube",
+		if ((fd = open("../../bin/montube",
 			O_WRONLY)) == -1) {
 		perror("launch : open mkfifo");
-		exit(-1);
 	}
 	dup2(fd, 1);
 
