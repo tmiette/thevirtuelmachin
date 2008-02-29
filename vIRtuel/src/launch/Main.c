@@ -9,7 +9,7 @@
 #include <dlfcn.h>
 #include "Launch.h"
 sigset_t mask;
-int debug = true;
+int debug = false;
 void (*ptWork)(void*, void*)= NULL;
 void * handle= NULL;
 static char * PIPE_NAMED = "pipeNamed"; // named pipe path

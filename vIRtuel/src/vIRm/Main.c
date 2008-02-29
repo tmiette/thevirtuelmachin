@@ -17,7 +17,7 @@
 #include "Shell.h"
 #include "Util.h"
 
-int debug = true;
+int debug = false;
 
 int main(int argc, char **argv) {
 	printf("Welcome to vIRtuel shell.\n");
