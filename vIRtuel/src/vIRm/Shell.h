@@ -17,8 +17,6 @@
 
 extern int debug;
 
-char * LIB_PATH = "../../objects/";
-
 typedef struct _object {
 	char name[NAME_LENGTH];
 	pid_t pid;

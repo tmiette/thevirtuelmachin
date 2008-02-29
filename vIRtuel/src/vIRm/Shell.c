@@ -4,7 +4,7 @@
 static object objects[MAX_OBJECT_NUMBER];
 static int pendingObjects[MAX_OBJECT_NUMBER]; //O -> pendind; 1 -> ready
 static char * MEM_NAME ="sharedmem";
-
+static char * LIB_PATH = "../../objects/";
 static void printPrompt();
 static void handleCommand(command * cmd);
 static void printCommand(command * cmd);
