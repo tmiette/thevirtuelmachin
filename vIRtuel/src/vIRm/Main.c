@@ -62,12 +62,3 @@ int main(int argc, char **argv) {
 	return EXIT_SUCCESS;
 }
 
-void testMmap() {
-	int fdout;
-	if ((fdout = open("ficher_temp2.txt", O_RDWR | O_CREAT | O_TRUNC, 0666)) < 0) {
-		perror("error opening file");
-		exit(EXIT_FAILURE);
-	}
-	write(fdout, "essai", 5);
-	close(fdout);
-}
