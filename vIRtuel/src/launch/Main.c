@@ -4,6 +4,7 @@ sigset_t mask;
 int debug = true;
 void (*ptWork)(void*, void*)= NULL;
 void * handle= NULL;
+int fd = 0;
 
 int main(int argc, char **argv) {
 
@@ -19,11 +20,12 @@ int main(int argc, char **argv) {
 	setvbuf(stdout, NULL, _IONBF, 0);
 
 	/* Open tube mkfifo */
-	//	if ((fd = open("/home/akiri/Documents/workspace/vIRtuel/bin/montube", O_WRONLY)) == -1) {
-	//		perror("launch : open mkfifo");
-	//		exit(-1);
-	//	}
-	//	dup2(fd, 1);
+	if ((fd = open("../../bin/mytube",
+			O_WRONLY)) == -1) {
+		perror("launch : open mkfifo");
+		exit(-1);
+	}
+	dup2(fd, 1);
 
 	/* Open target library */
 	printf("lib : %s\n", argv[1]);

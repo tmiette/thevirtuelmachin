@@ -11,7 +11,6 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <dlfcn.h>
-
 #include "Util.h"
 
 #define NAME_LENGTH 256
