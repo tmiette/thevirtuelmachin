@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 	int fd;
 	char c;
 
-	if ((fd = open(PIPE_NAMED, O_RDONLY)) == -1) {
+	if ((fd = open(PIPE_NAMED, 0666)) == -1) {
 		perror("open mkfifo");
 		exit(-1);
 	}

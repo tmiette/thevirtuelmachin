@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
 	/* Open tube mkfifo */
 		if ((fd = open(PIPE_NAMED,
-			O_WRONLY)) == -1) {
+				0666)) == -1) {
 		perror("launch : open mkfifo");
 	}
 	dup2(fd, 1);

@@ -306,6 +306,7 @@ static void endShell() {
 			kill(pid, SIGINT);
 		}
 	}
+	unlink(PIPE_NAMED);
 	exit(EXIT_SUCCESS);
 }
 
@@ -375,8 +376,8 @@ static int getObjIndexByPid(int pid) {
 }
 
 static int initMkfifo(char * fifoName) {
-	mode_t mode= S_IRUSR | S_IRGRP | S_IROTH | S_IWUSR | S_IWGRP | S_IWOTH;
-	if (mkfifo(fifoName, mode) == -1) {
+//	mode_t mode= S_IRUSR | S_IRGRP | S_IROTH | S_IWUSR | S_IWGRP | S_IWOTH;
+	if (mkfifo(fifoName, 0666) == -1) {
 		perror("mkfifo");
 		return -1;
 	}
