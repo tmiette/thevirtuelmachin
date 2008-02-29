@@ -28,7 +28,7 @@ The project root directory is divided into six main directories.
 	tasks.
 	3. "objects_src" which contains source files of libraries.
 	4. "doc" which contains the project documentation.
-	5. "doc/html" which contains the source file documentation
+	5. "doc/api" which contains the source file documentation
 	(doxygen format).
 	6. "src" which contains source files and makefiles.
 
