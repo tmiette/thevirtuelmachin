@@ -32,8 +32,8 @@ The project root directory is divided into six main directories.
 	(doxygen format).
 	6. "src" which contains source files and makefiles.
 
-Compiling sources and build executables
----------------------------------------
+Compiling sources and building executables
+------------------------------------------
 
 The compile all source files and to build executables files needed to
 run the program, you have to use the makefile in the src directory.
@@ -46,9 +46,13 @@ The executables are put in the bin directory.
 Quick start
 -----------
 
-To run the program, you can use the shell script XXX.sh
+To run the program, you have to executable files from the bin
+directory. You have to launch the vIRm file in a terminal and
+the oreader file in another terminal.
 
-	$ 
+	$ cd ./bin
+	$ ./vIRm
+	$ ./oreader
 
 Others make targets
 -------------------
