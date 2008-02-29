@@ -82,13 +82,14 @@ static void waitAllObjects() {
 
 	/* Send a waitall command to all objects */
 	/* Objects will stop them and wait for shell to restart */
-	while (objects[i].pid != -1) {
-		createJob(&j, getpid(), "waitall", -1, -1);
-		sendJob(i, &j);
-		pendingObjects[i] = 0;
-		DEBUG(debug, printf("handleCommand -> pending object (%d)\n",
-				objects[i].pid));
-		i++;
+	for (i = 0; i < MAX_OBJECT_NUMBER; ++i) {
+		if (objects[i].pid != -1) {
+			createJob(&j, getpid(), "waitall", -1, -1);
+			sendJob(i, &j);
+			pendingObjects[i] = 0;
+			DEBUG(debug, printf("handleCommand -> pending object (%d)\n",
+					objects[i].pid));
+		}
 	}
 }
 
@@ -265,8 +266,8 @@ static void sendJob(int objectIndex, job * j) {
 void launch() {
 	command cmd;
 	DEBUG(debug, printf("launch -> Shell pid (%d)\n", getpid()));
-	if('\0' == 0)
-printf("%d", sizeof(int));
+	if ('\0' == 0)
+		printf("%d", sizeof(int));
 	if (signal(SIGINT, endShell) == SIG_ERR) {
 		perror("signal");
 		exit(-1);
