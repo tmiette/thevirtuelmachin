@@ -32,55 +32,54 @@ The project root directory is divided into six main directories.
 	(doxygen format).
 	6. "src" which contains source files and makefiles.
 
-Building jar archive
---------------------
+Compiling sources and build executables
+---------------------------------------
 
-The following commands will build the executable jar archive in the
-"bin" directory : 
-	
-	$ ant
-	OR
-	$ ant jar
+The compile all source files and to build executables files needed to
+run the program, you have to use the makefile in the src directory.
+Use the default target to generate all these files :
+
+	$ make
+
+The executables are put in the bin directory.
 
 Quick start
 -----------
 
-To run the program, you can use the build file with the "run" task as
-following :
+To run the program, you can use the shell script XXX.sh
 
-	$ ant run
+	$ 
 
-Or you can simply use the java command to launch the jar archive :
+Others make targets
+-------------------
 
-	$ java - jar ${user_directory}/bin/IRPhoto.jar
+The src directory's makefile enables to perform some others tasks : 
 
-Others ant tasks
-----------------
-
-The build file has others ant tasks 
-
-	1. To compile java source files in the "classes" directory :
+	1. To remove all temporary files
 	
-		$ ant compile
+		$ make clean
 		
-	2. To generate java documentation in the "docs/api" directory :
+	2. To all temporary files and executables
 	
-		$ ant javadoc
-
-	3. To clean the project directory. This task removes class files, 
-	documentation files and the jar archive :
-	
-		$ ant clean
+		$ make mrproper
 
 Libraries
 ---------
 
-The application used external libraries to run. These libraries are in the
-"lib" directory and enable to perform graphical effects not included in
-the default swing api.
+The program uses external libraries to execute some tasks. When you
+create a new object, you have to specify the name of one of these
+libraries which will be used to perform the object's work.
+All of these libraries source files are in the objects_src directory.
+To recompile them and to rebuild libraries, you have to use the
+makefile in this directory :
 
-	1. swingx to display the world map and to manage photo localisations.
-	2. metadata-extractor to extract exif informations from photos files.
+	1. default target builds libraries in the objects directory
+	
+		$ make
+		
+	2. clean target removes temporary files and libraries
+	
+		$ make clean
 
 Known bugs
 ----------
