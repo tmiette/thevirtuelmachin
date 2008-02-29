@@ -88,6 +88,7 @@ makefile in this directory :
 Known bugs
 ----------
 
-The following section lists all known bugs of vIRtuel machin :
+Refer to the documentation file doc.pdf in the doc directory
+to know the list of known bugs.
 
 
