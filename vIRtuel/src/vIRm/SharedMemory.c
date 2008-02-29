@@ -6,6 +6,7 @@ static Bloc blocs[BLOC_NUMBER];
 
 static void writeParameters(char * par, void * output);
 static int isValidBloc(int bloc);
+static void * getBloc(int index);
 
 void initSharedMemory(char * memFile) {
 	int file;
@@ -78,6 +79,7 @@ void freeBloc(int index) {
 	if (isValidBloc(index)) {
 		blocs[index].blocValue = -1;
 		blocs[index].blocName[0] = '\0';
+		bzero(getBloc(index), BLOC_MEM_LENGTH);
 	}
 }
 
@@ -106,6 +108,7 @@ static void writeParameters(char * par, void * output) {
 	char* tokens= NULL;
 	char* trimed= NULL;
 	int integer = 0;
+	int bloc = -1;
 
 	tokens = strtok(par, ",");
 	while (tokens != NULL) {
@@ -119,12 +122,28 @@ static void writeParameters(char * par, void * output) {
 			output += sizeof(int);
 		}
 		// variable case
-		else if (0) {
-//TODO
+		else if ((bloc = getBlocByName(trimed)) != -1) {
+			/* Get memory pointer corresponding to variable */
+			void * mem = getBloc(bloc);
+			if (mem != NULL) {
+				char * pt = (char *)mem;
+				int len = 1;
+				int match = 0;
+				while(len < BLOC_MEM_LENGTH ){
+					if (*pt == '\0') {
+						if (++match == 2) {
+							break;
+						}
+					}
+					pt++;
+					len++;
+				}
+				memcpy(output, mem, len);
+			}
 		}
 		// string case
 		else {
-			sprintf(output, "%s\0", trimed);
+			sprintf(output, "%s", trimed);
 			output += strlen(trimed) + 1;
 		}
 
@@ -132,16 +151,9 @@ static void writeParameters(char * par, void * output) {
 	}
 }
 
-void * getBloc(int index) {
-	char * head= memory;
-	if (isValidBloc(index)) {
-		head += index * BLOC_MEM_LENGTH;
-	}
-	return head;
-}
-
 /**
  * Checks validy of the memory bloc index. Returns 1 if index is valid, 0 otherwise.
+ * @param int index index to check the validity.
  */
 int isValidBloc(int index) {
 	if (index >= 0 && index < BLOC_NUMBER && memoryLength != 0) {
@@ -186,5 +198,11 @@ int nameBloc(int bloc, char * name) {
 			printf("index (%d), blocs[i].blocName (%s)\n", i, blocs[i].blocName);
 		}
 	return -1;
+}
+
+static void * getBloc(int index) {
+	char * head= memory;
+	head += index * BLOC_MEM_LENGTH;
+	return head;
 }
 

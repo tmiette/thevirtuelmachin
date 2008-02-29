@@ -1,21 +1,12 @@
 #include "Launch.h"
-extern sigset_t mask;
-extern void (*ptWork)(void*, void*);
-job jobs[BUFSIZ];
-static int firstJob = 0;
-static int lastJob = 0;
-static int jobsNumber = 0;
 
-static void initJobs();
-static int pushJob(job * j);
-static int popJob();
-static void copyJob(job * src, job * dest);
+extern void (*ptWork)(void*, void*);
+extern void * handle;
+static sigset_t mask;
+static void * memory = NULL;
+static int memoryLength = 0;
 static void handleJob(job * j);
 static void * getBloc(int index);
-
-void handleMem() {
-
-}
 
 void waitJob() {
 	job j;
@@ -104,45 +95,74 @@ static void * getBloc(int index) {
 	return head;
 }
 
-static int pushJob(job * j) {
-	int tmp;
-	if (jobsNumber < FIFO_LENGTH) {
-		copyJob(&jobs[firstJob], j);
-		tmp = firstJob;
-		firstJob = next(firstJob);
-		jobsNumber++;
-		DEBUG(debug, printf("addNewJob -> new job added index (%d)", tmp));
-		return 0;
-	} else {
-		DEBUG(debug, printf("addNewJob -> too many job"));
-		return -1;
+void openMemMapFile(char * memFile) {
+	int file;
+	struct stat info;
+	int memLength;
+
+	if ((file = open(memFile, O_RDWR)) == -1) {
+		perror("openMemMapFile -> open");
+		exit(-1);
 	}
+
+	/* retrieve stats from file */
+	if (stat(memFile, &info) == -1) {
+		perror("openMemMapFile -> stat");
+		exit(-1);
+	}
+
+	memLength = info.st_size;
+
+	/* map the file in memory */
+	memory = mmap(NULL,
+	memLength,
+	PROT_READ | PROT_WRITE,
+	MAP_SHARED,
+	file,
+	0);
+
+	if (memory == (void *)-1) {
+		perror("openMemMapFile -> mmap");
+		exit(-1);
+	}
+
+	memoryLength = memLength;
+
+	close(file);
 }
 
-static void copyJob(job * src, job * dest) {
-	strcpy(dest->functionName, src->functionName);
-	dest->memIn = src->memIn;
-	dest->memOut = src->memOut;
-	dest->pid = dest->pid;
+static void closeSharedMemory() {
+	if (munmap(NULL, memoryLength) == -1) {
+		perror("initSharedMemory -> munmap");
+		exit(-1);
+	}
+
 }
 
-static int popJob() {
-	int tmp;
-	if (jobsNumber > 0) {
-		tmp = lastJob;
-		lastJob=next(lastJob);
-		jobsNumber--;
-		DEBUG(debug, printf("popJob -> job found index (%d)", lastJob));
-		return lastJob;
-	} else {
-		DEBUG(debug, printf("popJob -> empty fifo"));
-		return -1;
+void initSignals() {
+
+	if (signal(SIGINT, endLaunch) == SIG_ERR) {
+		perror("signal");
+		exit(-1);
 	}
+
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGUSR2);
+	sigprocmask( SIG_BLOCK, &mask, NULL);
+
+	struct sigaction sa;
+	sa.sa_flags = 0;
+	sigaction(SIGUSR2,&sa,NULL);
+
+	sigfillset(&mask);
+	sigdelset(&mask, SIGUSR2);
+
 }
 
-static void initJobs() {
-	int i;
-	for (i = 0; i < BUFSIZ; ++i) {
-		jobs[i].pid = -1;
-	}
+void endLaunch() {
+	DEBUG(debug, printf("endLaunch -> end object (%d)\n", getpid()));
+	closeSharedMemory();
+	/* Close library */
+	dlclose(handle);
+	exit(EXIT_SUCCESS);
 }

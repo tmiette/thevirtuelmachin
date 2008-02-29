@@ -140,12 +140,17 @@ static void createNewObject(command * cmd) {
 			/* Close useless pipe in */
 			close(objects[index].pipe[1]);
 
-			//TODO tester si pas de pb
 			/* Close useless pipe out */
 			close(objects[index].pipe[0]);
+			
+			/* Create object's library name : objectName.so */
+			char libName[NAME_LENGTH];
+			strcpy(libName, LIB_PATH);
+			strcat(libName, cmd->argv);
+			strcat(libName, ".so");
 
 			if (execl("../../bin/launch", "launch",
-					"POUET", MEM_NAME, NULL) == -1) {
+					libName, MEM_NAME, NULL) == -1) {
 				perror("execl");
 				exit(-1);
 			}
@@ -289,8 +294,16 @@ void launch() {
 }
 
 static void endShell() {
-
+	int i = 0;
+	pid_t pid;
 	DEBUG(debug, printf("endShell -> end shell\n"));
+	
+	/* Kill all my objects */
+	for (i = 0; i < MAX_OBJECT_NUMBER; ++i) {
+		if ((pid = objects[i].pid) != -1) {
+			kill(pid, SIGINT);
+		}
+	}
 	exit(EXIT_SUCCESS);
 }
 

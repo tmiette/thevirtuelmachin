@@ -7,6 +7,11 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <dlfcn.h>
+
 #include "Util.h"
 
 #define NAME_LENGTH 256
@@ -17,7 +22,6 @@
 
 
 extern int debug;
-extern void * memory;
 
 typedef struct _job {
 	pid_t pid;
@@ -26,7 +30,9 @@ typedef struct _job {
 	int memOut;
 } job;
 
-void handleMem();
 void waitJob();
+void endLaunch();
+void initSignals();
+void openMemMapFile(char * memFile);
 
 #endif /*LAUNCH_H_*/

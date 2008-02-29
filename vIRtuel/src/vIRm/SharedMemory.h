@@ -27,8 +27,8 @@ int getFreeBloc();
 void freeBloc(int bloc);
 void closeSharedMemory();
 void fillBloc(int index, char * data);
-void * getBloc(int bloc);
 int getBlocByName(char * name);
 int nameBloc(int bloc, char * name);
+char * getBlockName(int bloc);
 
 #endif /*SHAREDMEMORY_*/
