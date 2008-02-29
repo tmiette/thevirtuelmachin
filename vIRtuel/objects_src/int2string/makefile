@@ -1,18 +1,25 @@
-# makefile : int2string 
+#===========================================================
+#Project name : vIRtuel machin
+#Version : 1.0
+#Authors : Tom Miette & Sebastien Mouret
+#-----------------------------------------------------------
+#makefile to create int2string.so library
+#Created February 28, 2008 by Tom Miette & Sebastien Mouret
+#===========================================================
 
 # Source files
 export SRC = $(SRC_DIR)int2string.c
 # Object files
 OBJ = $(SRC:.c=.o)
-# Librairy
+# Library
 LIB = $(LIB_DIR)int2string.so
 
 all: $(LIB)
 
-# Targets to building .so librairies
+# Targets to building .so libraries
 $(LIB): $(OBJ)
 	@echo ----------------------------
-	@echo Building librairy $(LIB)
+	@echo Building library $(LIB)
 	@echo ----------------------------
 	ld -shared $(OBJ) -o $(LIB)
 	@echo ----------------------------
@@ -27,7 +34,7 @@ $(LIB): $(OBJ)
 
 .PHONY: clean
 
-# Target to clean temporary files and librairies
+# Target to clean temporary files and libraries
 clean:
 	@echo ----------------------------
 	@echo Removing files
