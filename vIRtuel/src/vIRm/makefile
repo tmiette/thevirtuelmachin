@@ -9,7 +9,6 @@
 
 # Source file directory
 SRC = $(SRC_DIR)Main.c\
-	$(SRC_DIR)Queue.c\
 	$(SRC_DIR)Shell.c\
 	$(SRC_DIR)Parser.c\
 	$(SRC_DIR)SharedMemory.c\
