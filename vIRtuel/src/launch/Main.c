@@ -4,6 +4,7 @@ sigset_t mask;
 int debug = true;
 void (*ptWork)(void*, void*)= NULL;
 void * handle= NULL;
+static char * PIPE_NAMED = "pipeNamed";
 
 int main(int argc, char **argv) {
 	int fd;
@@ -20,7 +21,7 @@ int main(int argc, char **argv) {
 	setvbuf(stdout, NULL, _IONBF, 0);
 
 	/* Open tube mkfifo */
-		if ((fd = open("../../bin/montube",
+		if ((fd = open(PIPE_NAMED,
 			O_WRONLY)) == -1) {
 		perror("launch : open mkfifo");
 	}

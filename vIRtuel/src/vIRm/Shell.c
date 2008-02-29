@@ -4,7 +4,9 @@
 static object objects[MAX_OBJECT_NUMBER];
 static int pendingObjects[MAX_OBJECT_NUMBER]; //O -> pendind; 1 -> ready
 static char * MEM_NAME ="sharedmem";
-static char * LIB_PATH = "../../objects/";
+static char * LIB_PATH = "../objects/";
+static char * PIPE_NAMED = "pipeNamed";
+static char * LAUNCH = "launch";
 static void printPrompt();
 static void handleCommand(command * cmd);
 static void printCommand(command * cmd);
@@ -150,7 +152,7 @@ static void createNewObject(command * cmd) {
 			strcat(libName, cmd->argv);
 			strcat(libName, ".so");
 
-			if (execl("../../bin/launch", "launch", libName, MEM_NAME, NULL)
+			if (execl(LAUNCH, "launch", libName, MEM_NAME, NULL)
 					== -1) {
 				perror("execl");
 				exit(-1);
@@ -280,11 +282,7 @@ void launch() {
 
 	initObjectsTab();
 
-	//	if (initMkfifo("/home/akiri/Documents/workspace/vIRtuel/bin/montube")
-	//			== MKFIFO_ERROR) {
-	//		perror("mkfifo");
-	//		exit(MKFIFO_ERROR);
-	//	}
+	initMkfifo(PIPE_NAMED);
 
 	while (1) {
 		initCommandStruct(&cmd);
