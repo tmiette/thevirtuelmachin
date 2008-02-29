@@ -145,9 +145,9 @@ static void extractNew(char ** bufferHead, command * cmd) {
 			/* Retrieving arguments of the function */
 			char * p = strchr(*bufferHead, ')');
 			if (p != NULL) {
-				strcpy(cmd->argv, strtok(*bufferHead, ")"));
+				strcpy(trim(cmd->argv), strtok(*bufferHead, ")"));
 				DEBUG(debug,
-						printf("extractNew -> arguments (%s)\n", cmd->argv));
+						printf("extractNew -> arguments (%s)\n", trim(cmd->argv));
 				(*bufferHead) = p + 1;
 			}
 		}
