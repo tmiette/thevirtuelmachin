@@ -21,6 +21,7 @@ export CFLAGS = -Wall -ansi -fPIC
 CALC_DIR = ./calc
 INT2STRING_DIR = ./int2string
 STRING2INT_DIR = ./string2int
+PRINTER_DIR = ./printer
 
 all: libs
 
@@ -29,6 +30,7 @@ libs:
 	@(cd $(CALC_DIR) && $(MAKE))
 	@(cd $(INT2STRING_DIR) && $(MAKE))
 	@(cd $(STRING2INT_DIR) && $(MAKE))
+	@(cd $(PRINTER_DIR) && $(MAKE))
 	
 .PHONY: clean
 
@@ -37,6 +39,7 @@ clean:
 	@(cd $(CALC_DIR) && $(MAKE) $@)
 	@(cd $(INT2STRING_DIR) && $(MAKE) $@)
 	@(cd $(STRING2INT_DIR) && $(MAKE) $@)
+	@(cd $(PRINTER_DIR) && $(MAKE) $@)
 	@echo ----------------------------
 	@echo Removing files
 	@echo ----------------------------
